@@ -1,5 +1,6 @@
 CalculusVisualization/out
 CalculusVisualization/.idea
-
 *.iml
 *.class
+*.xml
+*.fxml
