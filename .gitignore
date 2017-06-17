@@ -3,3 +3,4 @@
 *.class
 CalculusVisualizations/out
 CalculusVisualizations/.idea
+*.fxml
