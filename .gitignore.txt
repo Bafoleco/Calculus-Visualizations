@@ -1,3 +1,5 @@
-CalculusVisualization/CalculusVisualization.iml
-CalculusVisualization/out/*
-CalculusVisualization/.idea/*
+CalculusVisualization/out
+CalculusVisualization/.idea
+
+*.iml
+*.class
