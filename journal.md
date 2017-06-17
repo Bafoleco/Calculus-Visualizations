@@ -23,7 +23,7 @@ Setup .gitignore file
 Choose and added a license to the project  
 Added brief description in README.md file 
 Created journal.md file and decided on a format  
-Started following cmacfadyen on GitHub
+Started following cmacfadyen on GitHub  
 Informed Charlie of progress  
 
 ### Work started/continued
