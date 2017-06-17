@@ -3,15 +3,15 @@
 ## June 17th, 2017
 
 ### Work Times
-In: 1:05 PM
-Out: 3:05 PM
+In: 1:05 PM  
+Out: 3:05 PM  
 
-In: 5:10 PM
-Out: 6:11 PM
+In: 5:10 PM  
+Out: 6:24 PM  
 
 ### Total Time Worked
 
-3:01
+3:14
 
 ### Work Completed
 
@@ -24,6 +24,7 @@ Choose and added a license to the project
 Added brief description in README.md file 
 Created journal.md file and decided on a format  
 Started following cmacfadyen on GitHub
+Informed Charlie of progress  
 
 ### Work started/continued
 
