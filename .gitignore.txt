@@ -1,0 +1,3 @@
+CalculusVisualization/CalculusVisualization.iml
+CalculusVisualization/out/*
+CalculusVisualization/.idea/*
