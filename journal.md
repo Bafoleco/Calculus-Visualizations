@@ -30,7 +30,7 @@ Learned how the .gitignore file works
 Learned how to connect local repository to GitHub  
 Learned how to do as few basic things in Markdown  
 
-## June 17th, 2017
+## June 19th, 2017
 
 ### Work Times
 In: 1:20 PM  
@@ -47,3 +47,6 @@ The code to represent and evaluate functions was solid, however the rendering me
 Additionally, I wrote code to allow the graph to be panned and zoomed using the mouse and mouse wheel. This took by far the most time (>90%) of the work session. It took so long mostly because I kept running into subtle errors that invalidated what I thought was a workable method.
 
 Finally, I updated the journal to reflect the days progress. 
+
+### Learning Done
+Today, I read about JavaFX's event system and the documentation for numerous methods and fields contained within the MouseEvent and ScrollEvent classes. I also read about the methods of the GraphicsContext class and many Stack Overflow posts about the MOUSE_DRAGGED event although none were helpful.
