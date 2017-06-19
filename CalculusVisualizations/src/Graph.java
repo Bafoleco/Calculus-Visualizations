@@ -21,8 +21,8 @@ public class Graph {
 
         double relativeY = (y - minY) / Math.abs(maxY - minY);
         //transform
-        pixelSpace[0] = (TaylorSeries.getCanvas().getWidth() * relativeX);
-        int pixHeight = (int) (TaylorSeries.getCanvas().getWidth());
+        pixelSpace[0] = (TaylorSeries.getWidth() * relativeX);
+        int pixHeight = (int) (TaylorSeries.getHeight());
         double yValue = (pixHeight * relativeY);
         pixelSpace[1] = pixHeight - yValue;
         return pixelSpace;

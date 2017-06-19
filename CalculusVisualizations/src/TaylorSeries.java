@@ -18,7 +18,6 @@ import javafx.scene.Scene;
 public class TaylorSeries extends Application {
     private Stage stage;
 
-
     private static Canvas canvas;
     private GraphicsContext gc;
     private BorderPane p;
@@ -38,16 +37,23 @@ public class TaylorSeries extends Application {
     static double bMIN_Y = -1.1;
     static double bMAX_Y = 1.1;
 
-    double xOffset = 0;
-    double yOffset = 0;
-
-
-    //pixels per unit
     final static int XRES = 200;
     final static int YRES = 400;
 
+    final static int width = (int) ( Math.abs(MAX_X - MIN_X) * XRES );
+    final static int height = (int)( Math.abs(MAX_Y - MIN_Y) * YRES );
+
+    double deltaXCoord = 0;
+    double deltaYCoord = 0;
+
+
     double MouseXPos = 0;
     double MouseYPos = 0;
+
+    double xOffset = 0;
+    double yOffset = 0;
+
+    double zoomTransform = 1;
     boolean isMouseDragging = false;
 
     Function mainFunction = new Function("sin(x)");
@@ -57,8 +63,6 @@ public class TaylorSeries extends Application {
         stage = primaryStage;
         stage.setTitle("Taylor Series");
         //create canvas
-        int width = (int) ( Math.abs(MAX_X - MIN_X) * XRES );
-        int height = (int)( Math.abs(MAX_Y - MIN_Y) * YRES );
         canvas = new Canvas(width, height);
 
         canvas.addEventHandler(MouseEvent.MOUSE_MOVED, new EventHandler<MouseEvent>() {
@@ -76,13 +80,19 @@ public class TaylorSeries extends Application {
                 isMouseDragging = true;
                 double deltaXPix = event.getX() - MouseXPos;
                 double deltaYPix = event.getY() - MouseYPos;
-                double deltaXCoord = deltaXPix / XRES;
-                double deltaYCoord = deltaYPix / YRES;
-                MIN_X = bMIN_X - deltaXCoord;
-                MAX_X = bMAX_X - deltaXCoord;
-                MIN_Y = bMIN_Y + deltaYCoord;
-                MAX_Y = bMAX_Y + deltaYCoord;
-                gc.clearRect(0,0, 10000, 10000);
+                deltaXCoord = (deltaXPix / XRES);
+                deltaYCoord = (deltaYPix / YRES);
+                double xDiff = Math.abs((bMIN_X - xOffset) - (bMAX_X  - xOffset));
+                double newXDiff = zoomTransform * xDiff;
+                double movNeccesaryToAcheiveX = (newXDiff - xDiff) / 2;
+                MIN_X = (bMIN_X - deltaXCoord - xOffset) - movNeccesaryToAcheiveX;
+                MAX_X = (bMAX_X  - deltaXCoord - xOffset) + movNeccesaryToAcheiveX;
+                double yDiff = Math.abs((bMIN_Y - yOffset) - (bMAX_Y  - yOffset));
+                double newYDiff = zoomTransform * yDiff;
+                double movNeccesaryToAcheiveY = (newYDiff - yDiff) / 2;
+                MIN_Y = (bMIN_Y  + yOffset + deltaYCoord) - movNeccesaryToAcheiveY;
+                MAX_Y = (bMAX_Y  + yOffset + deltaYCoord) + movNeccesaryToAcheiveY;
+                gc.clearRect(0, 0, 10000, 10000);
                 renderAxis();
                 renderFunction(mainFunction, Color.BLUE);
                 isMouseDragging = false;
@@ -92,44 +102,44 @@ public class TaylorSeries extends Application {
         canvas.addEventHandler(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                bMIN_X = MIN_X;
-                bMAX_X = MAX_X;
-                bMIN_Y = MIN_Y;
-                bMAX_Y = MAX_Y;
-                System.out.println("Up called");
+                xOffset += deltaXCoord;
+                yOffset += deltaYCoord;
+                deltaXCoord = 0;
+                deltaYCoord = 0;
             }
         });
+
         canvas.addEventHandler(ScrollEvent.SCROLL, new EventHandler<ScrollEvent>() {
             @Override
             public void handle(ScrollEvent event) {
-                double yScroll = event.getDeltaY();
-                System.out.println(yScroll);
+                double  yScroll = event.getDeltaY();
+                System.out.println(zoomTransform);
                 if(yScroll < 0) {
-                    bMIN_X *= 1.1;
-                    MIN_X *= 1.1;
-                    bMAX_X *= 1.1;
-                    MAX_X *= 1.1;
-                    bMIN_Y *= 1.1;
-                    MIN_Y *= 1.1;
-                    bMAX_Y *= 1.1;
-                    MAX_Y *= 1.1;
+                    zoomTransform *= 1.1;
                 } else if(yScroll > 0) {
-                    bMIN_X *= .9;
-                    MIN_X *= .9;
-                    bMAX_X *= .9;
-                    MAX_X *= .9;
-                    bMIN_Y *= .9;
-                    MIN_Y *= .9;
-                    bMAX_Y *= .9;
-                    MAX_Y *= .9;
+                   zoomTransform *=.9;
                 }
 
-                gc.clearRect(0,0, 10000, 10000);
-                System.out.println(MIN_X + " = Min X," + MAX_X + " = Max X");
+                double xDiff = Math.abs((bMIN_X - xOffset) - (bMAX_X  - xOffset));
+                double newXDiff = zoomTransform * xDiff;
+                double movNeccesaryToAcheiveX = (newXDiff - xDiff) / 2;
+                MIN_X = (bMIN_X - xOffset) - movNeccesaryToAcheiveX;
+                MAX_X = (bMAX_X  - xOffset) + movNeccesaryToAcheiveX;
+
+                double yDiff = Math.abs((bMIN_Y - yOffset) - (bMAX_Y  - yOffset));
+                double newYDiff = zoomTransform * yDiff;
+                double movNeccesaryToAcheiveY = (newYDiff - yDiff) / 2;
+                MIN_Y = (bMIN_Y  + yOffset) - movNeccesaryToAcheiveY;
+                MAX_Y = (bMAX_Y  + yOffset) + movNeccesaryToAcheiveY;
+
+                gc.clearRect(0, 0, 10000, 10000);
                 renderAxis();
                 renderFunction(mainFunction, Color.BLUE);
+                isMouseDragging = false;
+
             }
         });
+
 
         //create buttons and input box
         tsRender = new Button("Render Taylor Series");
@@ -155,6 +165,8 @@ public class TaylorSeries extends Application {
 
         renderAxis();
         renderFunction(mainFunction, Color.BLUE);
+
+
     }
 
     private void renderTS() {
@@ -167,7 +179,7 @@ public class TaylorSeries extends Application {
      */
     private void renderFunction(Function functionToRender, Color renderColor) {
         gc.beginPath();
-        for(double d = MIN_X; d < MAX_X; d += (1 / (double) XRES)){
+        for(double d = MIN_X; d < MAX_X; d += (5 / (double) XRES)){
             double yValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[1];
             double xValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[0];
             gc.lineTo(xValue, yValue);
@@ -180,7 +192,7 @@ public class TaylorSeries extends Application {
      * A method to render the graphs axis and labels
      */
     private void renderAxis() {
-        for(int i = 0; i < (int) ( Math.abs(MAX_X - MIN_X) * XRES ); i++) {
+        for(int i = 0; i < getWidth(); i++) {
             double yValue = Graph.getPixelSpace(0, 0)[1];
             gc.setFill(Color.BLACK);
             gc.fillRect(i, yValue, 1, 1);
@@ -190,7 +202,6 @@ public class TaylorSeries extends Application {
         //Draw Y Axis
         for(int i = 0; i < canvas.getHeight(); i++) {
             gc.fillRect(Graph.getPixelSpace(0, 1)[0], i, 1, 1);
-            System.out.println("Central Pixel = " + Graph.getPixelSpace(0, 1)[0]);
         }
     }
 
@@ -219,9 +230,11 @@ public class TaylorSeries extends Application {
         return MAX_X;
     }
 
-    public static Canvas getCanvas() {
-        return canvas;
+    public static int getWidth() {
+        return width;
     }
 
-
+    public static int getHeight() {
+        return height;
+    }
 }
