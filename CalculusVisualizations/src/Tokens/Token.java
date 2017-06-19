@@ -9,8 +9,6 @@ import java.util.List;
  * @author Bay Foley-Cox
  */
 public abstract class Token {
-
-
     /**
      * An implementation of the shunting yard algorithm, this method converts from infix notation to reverse polish notation.
      * @param infixTokens a list of tokens in infix notation
