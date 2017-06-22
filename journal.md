@@ -72,27 +72,6 @@ Added support for exponentiation to function evaluation system
 ### Learning Done
 Today I mostly worked in code, however I researched the precedence and associativity of the exponentiation observation and referenced the formula for the Taylor series
 
-## June 19th, 2017
-
-### Work Times
-In: 1:20 PM  
-Out: 7:41 PM
-
-### Total Time Worked
-6:21
-
-### Work Done  
-Before the independent study began, I had started preliminary work on a visualization of the Taylor series. Today, I incoporated the code I wrote during that work into the git repository for the main project. This included code to represent and evaluate functions and code to create a a very basic GUI and render a graph of a function.  
-
-The code to represent and evaluate functions was solid, however the rendering mechanism was not. The graphs it created were hoplessly jagged and of inconsistent thickness. Therefore, I rewrote the render method, making use of JavaFX's prexisting methods for drawing curves. I choose to do this, rather than create the graph entirely from scratch as I originally planned, because learning how to use antialiasing and other neccesary techniques would have been a very distraction from the main focus of the independent study which is calculus.  
-
-Additionally, I wrote code to allow the graph to be panned and zoomed using the mouse and mouse wheel. This took by far the most time (>90%) of the work session. It took so long mostly because I kept running into subtle errors that invalidated what I thought was a workable method.
-
-Finally, I updated the journal to reflect the days progress.
-
-### Learning Done
-Today, I read about JavaFX's event system and the documentation for numerous methods and fields contained within the MouseEvent and ScrollEvent classes. I also read about the methods of the GraphicsContext class and many Stack Overflow posts about the MOUSE_DRAGGED event although none were helpful.
-
 ## June 22th, 2017
 
 ### Work Times
