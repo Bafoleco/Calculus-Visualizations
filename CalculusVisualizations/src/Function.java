@@ -11,6 +11,8 @@ import java.util.List;
 
 public class Function {
 
+    private final double deltaX = 0.001;
+
     private List<Token> expression;
 
     /**
@@ -20,6 +22,13 @@ public class Function {
      */
     public Function(String infixString) {
         expression = tokenify(infixString);
+    }
+    /**
+     * This method creates a function from a list of tokens representing an expression
+     * @param infixList a list of tokens representing a mathematical expression in infix notation
+     */
+    public Function(List<Token> infixList) {
+        expression = infixList;
     }
 
     /**
@@ -86,6 +95,11 @@ public class Function {
                 tokenList.add(new Divide());
                 index++;
             }
+            //if exponentiate add exponentiate token
+            else if(expression.substring(index).indexOf("^") == 0)  {
+                tokenList.add(new Exponentiate());
+                index++;
+            }
 
             //if sin, add sin token
             else if(expression.substring(index).indexOf("sin") == 0) {
@@ -138,5 +152,22 @@ public class Function {
             System.out.println("Arithmetic Exception: Likely division by zero");
         }
         return value;
+    }
+
+    public double takeDerivative(int order, double xPoint) {
+
+        if(order == 0) {
+            return this.computeFunc(xPoint);
+        } else if(order == 1) {
+            return (this.computeFunc(xPoint + deltaX) - this.computeFunc(xPoint)) / deltaX;
+        }
+        else if(order > 1) {
+            return (this.takeDerivative(order - 1, xPoint + deltaX) -
+                    this.takeDerivative(order - 1, xPoint)) / deltaX;
+        }
+        else {
+            System.out.println("Error");
+            return -1;
+        }
     }
 }

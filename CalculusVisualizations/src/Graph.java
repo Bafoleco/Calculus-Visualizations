@@ -1,6 +1,12 @@
 import java.awt.*;
 
+/**
+ * A class of static methods designed to handle the necessary conversions between the worlds of pixels and \
+ * the worlds of coordinates
+ * @author Bay Foley-Cox
+ */
 public class Graph {
+
     /**
      * Takes a point in coordinate space and finds the corresponding location in pixel space
      * @param x the x-value of the coordinate
@@ -18,7 +24,6 @@ public class Graph {
         int yRes = TaylorSeries.getYRES();
         //get relative positions between max and min
         double relativeX = (x - minX) / Math.abs(maxX - minX);
-
         double relativeY = (y - minY) / Math.abs(maxY - minY);
         //transform
         pixelSpace[0] = (TaylorSeries.getWidth() * relativeX);
@@ -26,13 +31,11 @@ public class Graph {
         double yValue = (pixHeight * relativeY);
         pixelSpace[1] = pixHeight - yValue;
         return pixelSpace;
-
     }
 
-
-
-    //@param int x coordinate that corresponds to a column in pixel space
-    //@return that column as an x coordinate
+    /**@param x coordinate that corresponds to a column in pixel space
+     * @return that column as an x coordinate in coordinate space
+     */
     public static double getCoordinateSpace(int x) {
         double minX = TaylorSeries.getMin_X();
         double maxY = TaylorSeries.getMAX_Y();
