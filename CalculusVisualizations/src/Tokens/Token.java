@@ -42,16 +42,21 @@ public abstract class Token {
                else {
                     topToken = null;
                }
-               while(topToken != null && topToken.getClass().getSimpleName().equals("Operators")) {
-                   topToken = operatorStack.get(operatorStack.size()-1);
-                   if( (!((Operator) workingToken).isAssociativity() && ((Operator) workingToken).getPrecedence() <=
-                            ((Operator) topToken).getPrecedence()) || ( ((Operator) workingToken).isAssociativity() &&
-                            ((Operator) workingToken).getPrecedence() < ((Operator) topToken).getPrecedence()) ) {
 
-                       outputStack.add(operatorStack.remove(operatorStack.size() - 1));
-                   }
+               while(topToken != null && topToken.getClass().getSuperclass().getSimpleName().equals("Operator") &&
+                       (   ((Operator) workingToken).getPrecedence() < ((Operator) topToken).getPrecedence() ||
+                       ( !((Operator) workingToken).isRightAssociative() && ((Operator) workingToken).getPrecedence()
+                               == ((Operator) topToken).getPrecedence())))
+               {
+                   outputStack.add(operatorStack.remove(operatorStack.size() - 1));
+                   if(operatorStack.size() > 0)
+                        topToken = operatorStack.get(operatorStack.size()-1);
+                   else
+                       topToken = null;
                }
+
                operatorStack.add(workingToken);
+
            }
            //if token is left parentheses add it to the operator stack
             else if(workingToken.getClass().getSimpleName().equals("LeftParens")) {

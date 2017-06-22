@@ -65,7 +65,8 @@ public class TaylorSeries extends Application {
     double zoomTransform = 1;
     boolean isMouseDragging = false;
 
-    Function mainFunction = new Function("(x^2)");
+    Function mainFunction = new Function("sin(x)");
+    Function taylorFunction = new Function("10000");
 
     public void start(Stage primaryStage) {
         //init
@@ -118,16 +119,11 @@ public class TaylorSeries extends Application {
 
         }
         taylorSeriesOrder++;
-        System.out.println("TSeries Order =" + taylorSeriesOrder);
-        if(taylorSeriesOrder > 2) {
-            System.out.println();
-        }
-        Function taylorPolynomialFunction = new Function(taylorPolynomial);
-        System.out.println(taylorPolynomialFunction.computeFunc(1));
+        taylorFunction = new Function(taylorPolynomial);
         gc.clearRect(0, 0, 10000, 10000);
         renderAxis();
         renderFunction(mainFunction, Color.BLUE);
-        renderFunction(taylorPolynomialFunction, Color.RED);
+        renderFunction(taylorFunction, Color.RED);
     }
 
     /**
@@ -175,6 +171,7 @@ public class TaylorSeries extends Application {
                 gc.clearRect(0, 0, 10000, 10000);
                 renderAxis();
                 renderFunction(mainFunction, Color.BLUE);
+                renderFunction(taylorFunction, Color.RED);
                 isMouseDragging = false;
             }
         });
@@ -212,6 +209,7 @@ public class TaylorSeries extends Application {
                 gc.clearRect(0, 0, 10000, 10000);
                 renderAxis();
                 renderFunction(mainFunction, Color.BLUE);
+                renderFunction(taylorFunction, Color.RED);
                 isMouseDragging = false;
 
             }
@@ -296,6 +294,10 @@ public class TaylorSeries extends Application {
 
     public static int getHeight() {
         return height;
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 
 }

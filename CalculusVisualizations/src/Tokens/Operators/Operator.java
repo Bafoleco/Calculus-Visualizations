@@ -18,7 +18,7 @@ public abstract class Operator extends Token {
         return precedence;
     }
 
-    public boolean isAssociativity() {
+    public boolean isRightAssociative() {
         return associativity;
     }
 
