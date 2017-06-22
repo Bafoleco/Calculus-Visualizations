@@ -50,3 +50,24 @@ Finally, I updated the journal to reflect the days progress.
 
 ### Learning Done
 Today, I read about JavaFX's event system and the documentation for numerous methods and fields contained within the MouseEvent and ScrollEvent classes. I also read about the methods of the GraphicsContext class and many Stack Overflow posts about the MOUSE_DRAGGED event although none were helpful.
+
+## June 21th, 2017
+
+### Work Times
+In: 11:20 PM  
+Out: 1:27 AM (Next Day) 
+
+### Total Time Worked 
+
+2:07
+
+### Work Done  
+Began serious work on the calculus side of things:  
+Started work on the render taylor series function, works except for serious bug in the way functions are evaluated which prevents it from working for polynomials of more than two terms  
+Wrote recursive method to evaluate nth derivative of a function  
+Wrote recursive method to evaluate factorials
+Changed the render function method to render at a higher level of detail when zoomed in. Prevents functions looking blocky at high zooms. 
+Added support for exponentiation to function evaluation system
+
+### Learning Done
+Today I mostly worked in code, however I researched the precedence and asscoiativity of the exponentiation observation and referenced the formula for the taylor series 
