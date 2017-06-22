@@ -1,4 +1,3 @@
-
 import Tokens.*;
 import Tokens.Operators.Divide;
 import Tokens.Operators.Exponentiate;
@@ -18,7 +17,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,7 +63,7 @@ public class TaylorSeries extends Application {
     double zoomTransform = 1;
     boolean isMouseDragging = false;
 
-    Function mainFunction = new Function("sin(x)");
+    Function mainFunction = new Function("2.718281828^x");
     Function taylorFunction = new Function("10000");
 
     public void start(Stage primaryStage) {
@@ -297,6 +295,10 @@ public class TaylorSeries extends Application {
     }
 
     public static void main(String[] args) {
+        Function function = new Function("2.718281^x)");
+        for(int i = 0; i < 9; i++) {
+            System.out.println("The " + i + "th derivative of the function is " + function.takeDerivative(i, 0) );
+        }
         launch(args);
     }
 
