@@ -77,16 +77,22 @@ Today I mostly worked in code, however I researched the precedence and associati
 ### Work Times
 In: 12:31 PM  
 Out: 3:37 PM
+In: 10:10 PM  
+Out: 12:08
 
 ### Total Time Worked
-3:06
+5:04
 
 ### Work Done  
 Made the render Taylor Series Button actually work*  
 I fixed multiple issues with the implementation of the shunting yard algorithm which were previously causing the miscalculation of certain expressions
 Worked to get the GitHub repository in better working order:  
 I added issues, tasks to the wiki, and a subproject for the component of the independent study I am working on right now.  
-I linked my home Git commits to my GitHub username.   
+I linked my home Git commits to my GitHub username.       
+I added a timer to the render method so I can easily see how changes affect its speed.  
+I changed the derivative method to use symetric differences.
+And, although implementing fully javadoc comments is undoubtedly a work in progress, I generated a set of them as a test. 
+
 
 ### Learning Done
-Today, I researched the exact implementation of the Shunting Yard algorithm especially with regards to operator precedence and associativity
+Today, I researched the exact implementation of the Shunting Yard algorithm especially with regards to operator precedence and associativity. I also watched several videos on Taylor's remainder theorem and researched optimum methods for machine differentiation. On the latter point, I found no satisfactory solution to the problem I face. 
