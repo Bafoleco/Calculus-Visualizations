@@ -77,8 +77,8 @@ Today I mostly worked in code, however I researched the precedence and associati
 ### Work Times
 In: 12:31 PM  
 Out: 3:37 PM
-In: 10:10 PM  
-Out: 12:08
+In: 10:10 PM    
+Out: 12:08 AM (Next Day)  
 
 ### Total Time Worked
 5:04
