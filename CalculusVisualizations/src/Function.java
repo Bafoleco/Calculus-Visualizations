@@ -159,14 +159,11 @@ public class Function {
         if(order == 0) {
             return this.computeFunc(xPoint);
         } else if(order == 1) {
-            return (this.computeFunc(xPoint + deltaX) - this.computeFunc(xPoint)) / deltaX;
+            return (this.computeFunc(xPoint + deltaX) - this.computeFunc(xPoint - deltaX)) / ( 2 * deltaX);
         }
         else if(order > 1) {
-//            System.out.println("Recursive derovative @ order " + order + "1st part = " +
-//                this.takeDerivative(order - 1, xPoint + deltaX) + ", second part = "  +
-//                this.takeDerivative(order - 1, xPoint));
             return (this.takeDerivative(order - 1, xPoint + deltaX) -
-                    this.takeDerivative(order - 1, xPoint)) / deltaX;
+                    this.takeDerivative(order - 1, xPoint - deltaX)) / (2 * deltaX);
 
 
         }

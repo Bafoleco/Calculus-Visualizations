@@ -203,7 +203,6 @@ public class TaylorSeries extends Application {
                 double mobNecessaryToAchieveY = (newYDiff - yDiff) / 2;
                 MIN_Y = (bMIN_Y  + yOffset) - mobNecessaryToAchieveY;
                 MAX_Y = (bMAX_Y  + yOffset) + mobNecessaryToAchieveY;
-
                 gc.clearRect(0, 0, 10000, 10000);
                 renderAxis();
                 renderFunction(mainFunction, Color.BLUE);
@@ -220,14 +219,17 @@ public class TaylorSeries extends Application {
      * @param renderColor the color with which the function shall be rendered
      */
     private void renderFunction(Function functionToRender, Color renderColor) {
+        long startTime = System.currentTimeMillis();
         gc.beginPath();
-        for(double d = MIN_X; d < MAX_X; d += (5 / (double) XRES * zoomTransform)){
+        for(double d = MIN_X; d < MAX_X; d += (10 / (double) XRES * zoomTransform)){
             double yValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[1];
             double xValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[0];
             gc.lineTo(xValue, yValue);
         }
         gc.setStroke(renderColor);
         gc.stroke();
+        long endTime = System.currentTimeMillis();
+        System.out.println("Render time was: " + (endTime - startTime) + " milliseconds");
     }
 
     /**
@@ -295,11 +297,12 @@ public class TaylorSeries extends Application {
     }
 
     public static void main(String[] args) {
-        Function function = new Function("2.718281^x)");
-        for(int i = 0; i < 9; i++) {
-            System.out.println("The " + i + "th derivative of the function is " + function.takeDerivative(i, 0) );
-        }
-        launch(args);
+     launch(args);
+     Function function = new Function("sin(x)");
+     for(int i = 0; i <= 10; i++) {
+         System.out.println(i + "th derivative = " + function.takeDerivative(i, 0));
+     }
+
     }
 
 }
