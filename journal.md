@@ -96,3 +96,20 @@ And, although implementing fully javadoc comments is undoubtedly a work in progr
 
 ### Learning Done
 Today, I researched the exact implementation of the Shunting Yard algorithm especially with regards to operator precedence and associativity. I also watched several videos on Taylor's remainder theorem and researched optimum methods for machine differentiation. On the latter point, I found no satisfactory solution to the problem I face. 
+
+## June 24th, 2017
+
+### Work Times
+In: 9:35 PM
+Out: 12:12 AM (Next Day) 
+
+### Total Time Worked
+2:37
+
+### Work Done
+Wrote experimental code for duel number computation.
+
+### Learning Done
+Today, I spent time on the difficult issue of the accurate compuatation of higher order derivatives in code. I read and watched videos about automatic differentiation and duel numbers and especially their extension to higher dimensions.
+
+
