@@ -112,4 +112,14 @@ Wrote experimental code for duel number computation.
 ### Learning Done
 Today, I spent time on the difficult issue of the accurate compuatation of higher order derivatives in code. I read and watched videos about automatic differentiation and duel numbers and especially their extension to higher dimensions.
 
+## June 27th, 2017
 
+### Work Times
+In: 4:30  PM
+Out: 5:20 PM
+
+### Total Time Worked
+0:50
+
+### Work Done
+Yesterday I arrived in California, where I will be staying with my Grandparents fo several weeks. So today I setup Git, IntelliJ and the Repository on their computer.
