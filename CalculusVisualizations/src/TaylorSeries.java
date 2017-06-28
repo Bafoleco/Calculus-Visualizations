@@ -138,6 +138,7 @@ public class TaylorSeries extends Application {
      * A helper method to create the canvas and its event handlers
      */
     private void setupCanvas() {
+
         canvas = new Canvas(width, height);
         canvas.addEventHandler(MouseEvent.MOUSE_MOVED, new EventHandler<MouseEvent>() {
             @Override
@@ -304,5 +305,4 @@ public class TaylorSeries extends Application {
      }
 
     }
-
 }
