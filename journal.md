@@ -114,6 +114,12 @@ Today, I spent time on the difficult issue of the accurate compuatation of highe
 
 ## June 27th, 2017
 
+### Total Time Worked
+0:50
+
+### Work Done
+Yesterday I arrived in California, where I will be staying with my Grandparents fo several weeks. So today I setup Git, IntelliJ and the Repository on their computer.
+
 ### Work Times
 In: 4:30  PM
 Out: 5:20 PM
@@ -123,3 +129,21 @@ Out: 5:20 PM
 
 ### Work Done
 Yesterday I arrived in California, where I will be staying with my Grandparents fo several weeks. So today I setup Git, IntelliJ and the Repository on their computer.
+
+## June 28th, 2017
+
+### Work Times
+My work today was divided into 3 sessions of roughly equal length, unfortunately I lost t
+Out: 12:41 AM(Next day)
+### Total Time Worked
+5:00 (estimated, likely understatement) 
+### Work Done
+Today, I worked on creating the UI that would combine all the tools I have built and will build into one smooth and visually appealing application.   
+I created a method to do all rendering updates without having to write out 6 lines of code every time  
+I wrote several other methods like this to clean up the code base  
+I created a Point class and a method for graphing those points
+I added the ability to graph derivatives.
+
+### Learning Done
+I spent large ammounts of time reading through the JavaFX documentation on various nodes as I was creating the UI
+
