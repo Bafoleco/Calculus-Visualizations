@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class represents a function, a relation between a set of inputs and a set of allowable outputs.
+ * This class represents a function, a relation between a set of inputs and a set of allowable outputs.  It also includes
+ * some tools used on functions and some necessary methods that should have been built into the Math class but weren't
  * @author Bay Foley-Cox
  */
 
@@ -169,6 +170,21 @@ public class Function {
         }
         else {
             System.out.println("Error");
+            return -1;
+        }
+    }
+
+    public static double factorial(int x) {
+        if(x == 0){
+            return 1;
+        }
+        else if(x == 1) {
+            return 1;
+        }
+        else if(x > 1) {
+            return x * factorial(x-1);
+        }
+        else {
             return -1;
         }
     }

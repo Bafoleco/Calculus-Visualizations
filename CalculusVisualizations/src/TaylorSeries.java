@@ -4,27 +4,32 @@ import Tokens.Operators.Exponentiate;
 import Tokens.Operators.Plus;
 import Tokens.Operators.Times;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Side;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TaylorSeries extends Application {
-
     private Stage stage;
     private static Canvas canvas;
-    private GraphicsContext gc;
+    private static GraphicsContext gc;
     private BorderPane p;
     private Scene graphicsScene;
     private Button tsRender;
@@ -60,20 +65,27 @@ public class TaylorSeries extends Application {
     double xOffset = 0;
     double yOffset = 0;
 
-    double zoomTransform = 1;
+    static double zoomTransform = 1;
     boolean isMouseDragging = false;
 
-    Function mainFunction = new Function("2.718281828^x");
+    int drvOrder = 1;
+    boolean showDrv = false;
+    boolean showCritPoints = false;
+
+    Function mainFunction = new Function("sin(x)");
     Function taylorFunction = new Function("10000");
+    List<Point> critPointList = new ArrayList<>();
+
 
     public void start(Stage primaryStage) {
         //init
         stage = primaryStage;
         stage.setTitle("Taylor Series");
         resetWindow();
-        setupCanvas();
 
-        //create buttons and input box
+        //create UI nodes
+        canvas = createCanvas();
+
         tsRender = new Button("Render Taylor Series");
         tsRender.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -81,31 +93,133 @@ public class TaylorSeries extends Application {
                 renderTS();
             }
         });
+
         textField = new TextField();
+        textField.setPromptText("Type your function here");
+        textField.setOnKeyReleased(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if(event.getCode().toString().equals("ENTER")) {
+                    System.out.println(textField.getText());
+                    mainFunction = new Function(textField.getText());
+                    taylorPolynomial = new ArrayList<>();
+                    taylorFunction = new Function("10000");
+                    gc.clearRect(0, 0, 10000, 10000);
+                    renderAxis();
+                    renderFunction(mainFunction, Color.BLUE);
+                    textField.clear();
+                }
+            }
+        });
+
+
+        //create
+        TabPane toolTab = new TabPane();
+
+        //create ts tab
+        Tab taylorSeriesTab = new Tab("Taylor Series");
+        GridPane tsGridPane = new GridPane();
+        tsGridPane.setHgap(10);
+        tsGridPane.add(tsRender, 0, 0);
+        taylorSeriesTab.setContent(tsGridPane);
+        tsGridPane.setStyle(" -fx-background-color: indianred;");
+        tsGridPane.setPadding(new Insets(20, 10, 10, 10));
+
+        toolTab.getTabs().add(taylorSeriesTab);
+        toolTab.setSide(Side.TOP);
+
+        //create drv tab
+        Tab drvTab = new Tab("Derivative");
+        GridPane drvGridPane = new GridPane();
+        drvGridPane.setVgap(20);
+
+        CheckBox drvCheckBox = new CheckBox("Render the derivative");
+        drvCheckBox.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                System.out.println("Hello");
+                if(drvCheckBox.isSelected()) {
+                    showDrv = true;
+                }
+                else {
+                    showDrv = false;
+                }
+                updateRender();
+            }
+        });
+        drvGridPane.add(drvCheckBox, 0, 0);
+
+        GridPane drvOrderPane = new GridPane();
+        ComboBox<Integer> orderChooser = new ComboBox(FXCollections.observableArrayList(1, 2, 3, 4));
+        orderChooser.setValue(1);
+        orderChooser.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                drvOrder = orderChooser.getValue();
+                System.out.println(drvOrder);
+                updateRender();
+            }
+        });
+        drvOrderPane.add(orderChooser, 0, 0);
+        Label drvOrderExp = new Label("   Set derivative order");
+        drvOrderPane.add(drvOrderExp, 1, 0);
+        drvGridPane.add(drvOrderPane, 0, 1);
+
+        CheckBox criticalCheckBox = new CheckBox("Show critical points");
+        drvCheckBox.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                System.out.println("Hello");
+                if(drvCheckBox.isSelected()) {
+                    showDrv = true;
+                }
+                else {
+                    showDrv = false;
+                }
+                updateRender();
+            }
+        });
+
+
+
+        drvTab.setContent(drvGridPane);
+        drvGridPane.setStyle(" -fx-background-color: mediumseagreen;");
+        drvGridPane.setPadding(new Insets(20, 10, 10, 10));
+        toolTab.getTabs().add(drvTab);
+
+
+
 
         //arrange nodes
         gc = canvas.getGraphicsContext2D();
         p = new BorderPane();
         p.setCenter(canvas);
         GridPane grid = new GridPane();
-        grid.add(tsRender, 0, 0);
         grid.add(textField, 1, 0);
-        p.setBottom(grid);
+        textField.setMinWidth(1500);
+        p.setTop(grid);
+        p.setLeft(toolTab);
+
         graphicsScene = new Scene(p, width, height + 100);
         //start
         stage.setScene(graphicsScene);
         stage.show();
-        renderAxis();
-        renderFunction(mainFunction, Color.BLUE);
+        critPointList.add(new Point(0, 1, Color.LIGHTBLUE));
+        updateRender();
+
     }
 
+    /**
+     * A method, called whenever the Render Taylor Series button is pressed by the user, that sets generates a list of
+     * tokens representing a Taylor Series of the appropriate order and uses that list to set the taylorFunction
+     */
     private void renderTS() {
         if(taylorSeriesOrder != 0)
             taylorPolynomial.add(new Plus());
         taylorPolynomial.add(new LeftParens());
         taylorPolynomial.add(new Constant(mainFunction.takeDerivative(taylorSeriesOrder, taylorCentered)));
         taylorPolynomial.add(new Divide());
-        taylorPolynomial.add(new Constant(factorial(taylorSeriesOrder)));
+        taylorPolynomial.add(new Constant(Function.factorial(taylorSeriesOrder)));
         taylorPolynomial.add(new RightParens());
         if(taylorSeriesOrder != 0) {
             taylorPolynomial.add(new Times());
@@ -114,14 +228,10 @@ public class TaylorSeries extends Application {
             taylorPolynomial.add(new Exponentiate());
             taylorPolynomial.add(new Constant(taylorSeriesOrder));
             taylorPolynomial.add(new RightParens());
-
         }
         taylorSeriesOrder++;
         taylorFunction = new Function(taylorPolynomial);
-        gc.clearRect(0, 0, 10000, 10000);
-        renderAxis();
-        renderFunction(mainFunction, Color.BLUE);
-        renderFunction(taylorFunction, Color.RED);
+        updateRender();
     }
 
     /**
@@ -137,10 +247,10 @@ public class TaylorSeries extends Application {
     /**
      * A helper method to create the canvas and its event handlers
      */
-    private void setupCanvas() {
+    private Canvas createCanvas() {
 
-        canvas = new Canvas(width, height);
-        canvas.addEventHandler(MouseEvent.MOUSE_MOVED, new EventHandler<MouseEvent>() {
+        Canvas newCanvas = new Canvas(width, height);
+        newCanvas.addEventHandler(MouseEvent.MOUSE_MOVED, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 if(!isMouseDragging) {
@@ -149,7 +259,7 @@ public class TaylorSeries extends Application {
                 }
             }
         });
-        canvas.addEventHandler(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
+        newCanvas.addEventHandler(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 isMouseDragging = true;
@@ -167,14 +277,11 @@ public class TaylorSeries extends Application {
                 double movNeccesaryToAcheiveY = (newYDiff - yDiff) / 2;
                 MIN_Y = (bMIN_Y  + yOffset + deltaYCoord) - movNeccesaryToAcheiveY;
                 MAX_Y = (bMAX_Y  + yOffset + deltaYCoord) + movNeccesaryToAcheiveY;
-                gc.clearRect(0, 0, 10000, 10000);
-                renderAxis();
-                renderFunction(mainFunction, Color.BLUE);
-                renderFunction(taylorFunction, Color.RED);
+                updateRender();
                 isMouseDragging = false;
             }
         });
-        canvas.addEventHandler(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
+        newCanvas.addEventHandler(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 xOffset += deltaXCoord;
@@ -184,7 +291,7 @@ public class TaylorSeries extends Application {
             }
         });
 
-        canvas.addEventHandler(ScrollEvent.SCROLL, new EventHandler<ScrollEvent>() {
+        newCanvas.addEventHandler(ScrollEvent.SCROLL, new EventHandler<ScrollEvent>() {
             @Override
             public void handle(ScrollEvent event) {
                 double  yScroll = event.getDeltaY();
@@ -205,13 +312,12 @@ public class TaylorSeries extends Application {
                 MIN_Y = (bMIN_Y  + yOffset) - mobNecessaryToAchieveY;
                 MAX_Y = (bMAX_Y  + yOffset) + mobNecessaryToAchieveY;
                 gc.clearRect(0, 0, 10000, 10000);
-                renderAxis();
-                renderFunction(mainFunction, Color.BLUE);
-                renderFunction(taylorFunction, Color.RED);
+                updateRender();
                 isMouseDragging = false;
 
             }
         });
+        return  newCanvas;
     }
 
     /**
@@ -222,16 +328,28 @@ public class TaylorSeries extends Application {
     private void renderFunction(Function functionToRender, Color renderColor) {
         long startTime = System.currentTimeMillis();
         gc.beginPath();
-        for(double d = MIN_X; d < MAX_X; d += (10 / (double) XRES * zoomTransform)){
+        for(double d = MIN_X; d < MAX_X; d += (5 / (double) XRES * zoomTransform)){
             double yValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[1];
             double xValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[0];
             gc.lineTo(xValue, yValue);
         }
         gc.setStroke(renderColor);
         gc.stroke();
-        long endTime = System.currentTimeMillis();
-        System.out.println("Render time was: " + (endTime - startTime) + " milliseconds");
+//        long endTime = System.currentTimeMillis();
+//        System.out.println("Render time was: " + (endTime - startTime) + " milliseconds");
     }
+
+    private void renderDerivative(int order) {
+        gc.beginPath();
+        for(double d = MIN_X; d < MAX_X; d += (5 / (double) XRES * zoomTransform)){
+            double yValue = Graph.getPixelSpace(d, mainFunction.takeDerivative(order, d))[1];
+            double xValue = Graph.getPixelSpace(d, 5)[0];
+            gc.lineTo(xValue, yValue);
+        }
+        gc.setStroke(Color.MEDIUMSEAGREEN);
+        gc.stroke();
+    }
+
 
     /**
      * A method to render the graphs axis and labels
@@ -241,28 +359,33 @@ public class TaylorSeries extends Application {
             double yValue = Graph.getPixelSpace(0, 0)[1];
             gc.setFill(Color.BLACK);
             gc.fillRect(i, yValue, 1, 1);
-
         }
-
         //Draw Y Axis
         for(int i = 0; i < canvas.getHeight(); i++) {
             gc.fillRect(Graph.getPixelSpace(0, 1)[0], i, 1, 1);
         }
     }
 
-    public static int factorial(int x) {
-        if(x == 0){
-            return 1;
+    private void updateRender() {
+        gc.clearRect(0, 0, 10000, 10000);
+        renderAxis();
+        renderFunction(mainFunction, Color.BLUE);
+        renderFunction(taylorFunction, Color.INDIANRED);
+        if(showDrv) {
+            System.out.println(drvOrder);
+            renderDerivative(drvOrder);
         }
-        else if(x == 1) {
-            return 1;
+        for(Point p : critPointList) {
+            p.drawPoint();
         }
-        else if(x > 1) {
-            return x * factorial(x-1);
-        }
-        else {
-            return -1;
-        }
+    }
+
+    public static double getZoomTransform() {
+        return zoomTransform;
+    }
+
+    public static GraphicsContext getGc() {
+        return gc;
     }
 
     public static double getMIN_Y() {
@@ -299,10 +422,5 @@ public class TaylorSeries extends Application {
 
     public static void main(String[] args) {
      launch(args);
-     Function function = new Function("sin(x)");
-     for(int i = 0; i <= 10; i++) {
-         System.out.println(i + "th derivative = " + function.takeDerivative(i, 0));
-     }
-
     }
 }
