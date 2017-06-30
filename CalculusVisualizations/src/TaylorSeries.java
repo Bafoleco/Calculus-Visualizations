@@ -3,7 +3,10 @@ import Tokens.Operators.Divide;
 import Tokens.Operators.Exponentiate;
 import Tokens.Operators.Plus;
 import Tokens.Operators.Times;
+import com.sun.tools.hat.internal.model.HackJavaValue;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -23,6 +26,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
+import sun.tools.jconsole.inspector.XObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +39,7 @@ public class TaylorSeries extends Application {
     private Scene graphicsScene;
     private Button tsRender;
     private TextField textField;
+    private Slider approxLoc;
 
     //Window size tracking, b prefix indicates that it is the base value
     private static double MIN_X = 0;
@@ -59,22 +65,24 @@ public class TaylorSeries extends Application {
 
     private List<Token> taylorPolynomial = new ArrayList<>();
 
-    double MouseXPos = 0;
-    double MouseYPos = 0;
+    private double MouseXPos = 0;
+    private double MouseYPos = 0;
 
-    double xOffset = 0;
-    double yOffset = 0;
+    private double xOffset = 0;
+    private double yOffset = 0;
 
     static double zoomTransform = 1;
     boolean isMouseDragging = false;
 
-    int drvOrder = 1;
-    boolean showDrv = false;
+    private int drvOrder = 1;
+    private boolean showDrv = false;
     boolean showCritPoints = false;
+    private boolean secantEnabled = false;
+    private double hValue = 1;
 
-    Function mainFunction = new Function("sin(x)");
-    Function taylorFunction = new Function("10000");
-    List<Point> critPointList = new ArrayList<>();
+    private Function mainFunction = new Function("sin(x)");
+    private Function taylorFunction = new Function("10000");
+    private List<Point> critPointList = new ArrayList<>();
 
 
     public void start(Stage primaryStage) {
@@ -115,18 +123,10 @@ public class TaylorSeries extends Application {
 
         //create
         TabPane toolTab = new TabPane();
+        toolTab.setSide(Side.TOP);
 
         //create ts tab
-        Tab taylorSeriesTab = new Tab("Taylor Series");
-        GridPane tsGridPane = new GridPane();
-        tsGridPane.setHgap(10);
-        tsGridPane.add(tsRender, 0, 0);
-        taylorSeriesTab.setContent(tsGridPane);
-        tsGridPane.setStyle(" -fx-background-color: indianred;");
-        tsGridPane.setPadding(new Insets(20, 10, 10, 10));
-
-        toolTab.getTabs().add(taylorSeriesTab);
-        toolTab.setSide(Side.TOP);
+        toolTab.getTabs().add(createTsTab());
 
         //create drv tab
         Tab drvTab = new Tab("Derivative");
@@ -165,23 +165,51 @@ public class TaylorSeries extends Application {
         drvOrderPane.add(drvOrderExp, 1, 0);
         drvGridPane.add(drvOrderPane, 0, 1);
 
-        CheckBox criticalCheckBox = new CheckBox("Show critical points");
-        drvCheckBox.setOnAction(new EventHandler<ActionEvent>() {
+
+        CheckBox secantCheckBox = new CheckBox("Enable secant tool");
+        secantCheckBox.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                System.out.println("Hello");
-                if(drvCheckBox.isSelected()) {
-                    showDrv = true;
+                if(secantCheckBox.isSelected()) {
+                    secantEnabled = true;
+                    approxLoc.setValueChanging(true);
                 }
                 else {
-                    showDrv = false;
+                    secantEnabled = false;
+                    approxLoc.setValueChanging(false);
+
                 }
                 updateRender();
             }
         });
 
+        approxLoc = new Slider(bMIN_X, bMAX_X, (bMAX_X + bMIN_X) / 2);
+        approxLoc.valueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                updateRender();
+            }
+        });
+
+        drvGridPane.add(secantCheckBox, 0 , 2);
 
 
+
+        drvGridPane.add(approxLoc, 0, 4);
+
+
+        drvGridPane.add(new Label("Value of h"), 0, 5);
+
+
+        Slider hValueSlider = new Slider(0.01, 2, 1);
+        hValueSlider.valueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                hValue = hValueSlider.getValue();
+                updateRender();
+            }
+        });
+        drvGridPane.add(hValueSlider, 0, 6);
         drvTab.setContent(drvGridPane);
         drvGridPane.setStyle(" -fx-background-color: mediumseagreen;");
         drvGridPane.setPadding(new Insets(20, 10, 10, 10));
@@ -204,11 +232,21 @@ public class TaylorSeries extends Application {
         //start
         stage.setScene(graphicsScene);
         stage.show();
-        critPointList.add(new Point(0, 1, Color.LIGHTBLUE));
         updateRender();
 
     }
 
+
+    private Tab createTsTab() {
+        Tab taylorSeriesTab = new Tab("Taylor Series");
+        GridPane tsGridPane = new GridPane();
+        tsGridPane.setHgap(10);
+        tsGridPane.add(tsRender, 0, 0);
+        taylorSeriesTab.setContent(tsGridPane);
+        tsGridPane.setStyle(" -fx-background-color: indianred;");
+        tsGridPane.setPadding(new Insets(20, 10, 10, 10));
+        return taylorSeriesTab;
+    }
     /**
      * A method, called whenever the Render Taylor Series button is pressed by the user, that sets generates a list of
      * tokens representing a Taylor Series of the appropriate order and uses that list to set the taylorFunction
@@ -371,13 +409,33 @@ public class TaylorSeries extends Application {
         renderAxis();
         renderFunction(mainFunction, Color.BLUE);
         renderFunction(taylorFunction, Color.INDIANRED);
+        approxLoc.setMax(MAX_X);
+        approxLoc.setMin(MIN_X);
+        if(secantEnabled) {
+            double xOne = approxLoc.getValue();
+            double yOne = mainFunction.computeFunc(approxLoc.getValue());
+            double xTwo = approxLoc.getValue() + hValue;
+            double yTwo = mainFunction.computeFunc(approxLoc.getValue() + hValue);
+            new Point(xOne, yOne, Color.MEDIUMSEAGREEN).drawPoint();
+            new Point(xTwo, yTwo, Color.MEDIUMSEAGREEN).drawPoint();
+            drawLine(xOne, yOne, xTwo, yTwo);
+        }
         if(showDrv) {
-            System.out.println(drvOrder);
             renderDerivative(drvOrder);
         }
         for(Point p : critPointList) {
             p.drawPoint();
         }
+    }
+
+    private void drawLine(double xOne, double yOne, double xTwo, double yTwo) {
+        double slope = (yTwo - yOne) / (xTwo - xOne);
+        System.out.println("Slope = " + slope);
+        String expression = new Double(yOne).toString() + "+" + new Double(slope).toString() + "*(x-" +
+                new Double(xOne).toString() + ")";
+        System.out.println("Expression = " + expression);
+
+        renderFunction(new Function(expression), Color.MEDIUMSEAGREEN);
     }
 
     public static double getZoomTransform() {

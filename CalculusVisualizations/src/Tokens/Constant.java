@@ -13,4 +13,8 @@ public class Constant extends Token {
     public double getValue() {
         return value;
     }
+
+    public void setValue(double d) {
+        value = d;
+    }
 }

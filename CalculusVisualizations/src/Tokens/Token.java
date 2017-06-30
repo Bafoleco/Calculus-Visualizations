@@ -111,4 +111,19 @@ public abstract class Token {
         }
         return stack.get(0);
     }
+    public double getValue() {
+        return 0;
+    }
+    public void setValue(double d) {
+
+    }
+    boolean isNegated = false;
+
+    public boolean getIsNegated() {
+        return isNegated;
+    }
+
+    public void setIsNegated(boolean isnNegated) {
+        this.isNegated = isnNegated;
+    }
 }

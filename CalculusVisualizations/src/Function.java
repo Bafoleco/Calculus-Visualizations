@@ -85,13 +85,16 @@ public class Function {
                 tokenList.add(new Plus());
                 index++;
             }
-
+            else if(expression.substring(index).indexOf("-") == 0) {
+                tokenList.add(new Minus());
+                index++;
+            }
             //if times, add times token
             else if(expression.substring(index).indexOf("*") == 0) {
                 tokenList.add(new Times());
                 index++;
             }
-            //if times, add times token
+            //if divide, add divide token
             else if(expression.substring(index).indexOf("/") == 0) {
                 tokenList.add(new Divide());
                 index++;
@@ -123,6 +126,22 @@ public class Function {
                 index++;
             }
         }
+        //post processing
+        for(int i = 0; i < tokenList.size(); i++) {
+            if(tokenList.get(i).getClass().getSimpleName().equals("Minus") && (i == 0 ||
+                    !tokenList.get(i - 1).getClass().getSimpleName().equals("Variable") &&
+                    !tokenList.get(i - 1).getClass().getSimpleName().equals("Constant")))
+            {
+                if(tokenList.get(i + 1).getClass().getSimpleName().equals("Constant")) {
+                   tokenList.get(i + 1).setValue(-1 * tokenList.get(i + 1).getValue());
+                    tokenList.remove(i);
+                }
+                else {
+                    tokenList.get(i + 1).setIsNegated(true);
+                    tokenList.remove(i);
+                }
+            }
+        }
         return tokenList;
     }
 
@@ -136,8 +155,11 @@ public class Function {
         //constant tokens of value x
         List<Token> substitutedExpression = new ArrayList<>();
         for (Token t : this.expression) {
-            if(t.getClass().getSimpleName().equals("Variable"))
+            if(t.getClass().getSimpleName().equals("Variable")) {
+                if (t.getIsNegated())
+                    substitutedExpression.add(new Constant(-1 * x));
                 substitutedExpression.add(new Constant(x));
+            }
             else
                 substitutedExpression.add(t);
         }
@@ -165,8 +187,6 @@ public class Function {
         else if(order > 1) {
             return (this.takeDerivative(order - 1, xPoint + deltaX) -
                     this.takeDerivative(order - 1, xPoint - deltaX)) / (2 * deltaX);
-
-
         }
         else {
             System.out.println("Error");
