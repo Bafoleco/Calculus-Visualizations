@@ -114,18 +114,15 @@ Today, I spent time on the difficult issue of the accurate compuatation of highe
 
 ## June 27th, 2017
 
-### Total Time Worked
-0:50
-
-### Work Done
-Yesterday I arrived in California, where I will be staying with my Grandparents fo several weeks. So today I setup Git, IntelliJ and the Repository on their computer.
-
 ### Work Times
 In: 4:30  PM
 Out: 5:20 PM
 
 ### Total Time Worked
 0:50
+
+### Work Done
+Yesterday I arrived in California, where I will be staying with my Grandparents fo several weeks. So today I setup Git, IntelliJ and the Repository on their computer.
 
 ### Work Done
 Yesterday I arrived in California, where I will be staying with my Grandparents fo several weeks. So today I setup Git, IntelliJ and the Repository on their computer.
@@ -147,3 +144,18 @@ I added the ability to graph derivatives.
 ### Learning Done
 I spent large ammounts of time reading through the JavaFX documentation on various nodes as I was creating the UI
 
+
+## June 29th, 2017
+
+### Work Times
+In: 5:39 PM
+Out: 6:25
+In 7:02 
+Out 9:17
+### Total Time Worked
+3:29
+### Work Done
+Today, I created the first iteration of the derivative visualization. I wrote code to allow secant lines to be drawn with varying distances between the points. 
+I added support for negative numbers and subtraction in the Function class
+### Learning Done
+I learned how to use observable properties in javaFX, that is write code that acts when one of an objects field changes. I also learned about the Slider class.
