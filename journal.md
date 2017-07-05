@@ -148,10 +148,10 @@ I spent large ammounts of time reading through the JavaFX documentation on vario
 ## June 29th, 2017
 
 ### Work Times
-In: 5:39 PM
-Out: 6:25
-In 7:02 
-Out 9:17
+In: 5:39 PM  
+Out: 6:25  
+In 7:02  
+Out 9:17  
 ### Total Time Worked
 3:29
 ### Work Done
@@ -159,3 +159,21 @@ Today, I created the first iteration of the derivative visualization. I wrote co
 I added support for negative numbers and subtraction in the Function class
 ### Learning Done
 I learned how to use observable properties in javaFX, that is write code that acts when one of an objects field changes. I also learned about the Slider class.
+
+## July 4th, 2017
+
+### Work Times
+In: 11:44 AM (West Coast Time)  
+Out: 4:02 PM (Mountain Time)  
+In: 10:10 PM  
+
+
+### Total Time Worked
+
+### Work Done
+Separated code for secant lines, derivative graphs and the Taylor Series into classes  
+Added UI for Taylor Series, included options to choose order, the point to approximate and whether it is a maclaurin series  
+Attempted without success to fix sudden loss of control and pin wheel of death
+
+### Learning Done
+
