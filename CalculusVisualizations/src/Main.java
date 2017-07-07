@@ -1,9 +1,7 @@
 import Tokens.*;
-import Tokens.Operators.Divide;
-import Tokens.Operators.Exponentiate;
+import Tokens.Operators.Minus;
 import Tokens.Operators.Plus;
 import Tokens.Operators.Times;
-import com.sun.tools.hat.internal.model.HackJavaValue;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -15,32 +13,39 @@ import javafx.geometry.Side;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.text.*;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
-import sun.tools.jconsole.inspector.XObject;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-
 public class Main extends Application {
     private Stage stage;
     private Canvas canvas;
     private static GraphicsContext gc;
-    private BorderPane p;
+    private BorderPane b;
     private Scene graphicsScene;
     private Button tsRender;
     private TextField textField;
     private Slider drvApproxLoc;
     private Slider tsApproxLoc;
+    private Slider lowerBound;
+    private Slider upperBound;
+    private Slider tsErrorLoc;
+    private static TextArea console;
+
 
     //Window size tracking, b prefix indicates that it is the base value
     private static double MIN_X = 0;
@@ -53,7 +58,7 @@ public class Main extends Application {
     private final static double bMAX_Y = 1.1;
 
     private final static int XRES = 200;
-    private final static int YRES = 400;
+    private final static int YRES = 300;
 
     private final static int width = (int) ( Math.abs(bMAX_X - bMIN_X) * XRES );
     private final static int height = (int)( Math.abs(bMAX_Y - bMIN_Y) * YRES );
@@ -70,13 +75,18 @@ public class Main extends Application {
     private static double zoomTransform = 1;
     private boolean isMouseDragging = false;
 
+    //default function creation
     private Function mainFunction = new Function("sin(x)");
+
+    //settings
+    private static double baseLineWeight = 2 ;
+    private static int roundLevel = 3;
 
     //create visualizers
     private SecantLine secantDrawer = new SecantLine(0, 2, mainFunction);
     private DerivativeGraph derivativeGraphDrawer = new DerivativeGraph( 1, mainFunction);
     private TaylorSeries taylorSeriesDrawer = new TaylorSeries(1, 0, mainFunction);
-    private RiemannSum riemannSumDrawer = new RiemannSum();
+    private RiemannSum riemannSumDrawer = new RiemannSum(-2, 2, mainFunction);
 
     public void start(Stage primaryStage) {
         //init
@@ -86,22 +96,18 @@ public class Main extends Application {
 
         //create UI nodes
         canvas = createCanvas();
-
         textField = new TextField();
         textField.setPromptText("Type your function here");
         textField.setOnKeyReleased(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
                 if(event.getCode().toString().equals("ENTER")) {
-                    System.out.println(textField.getText());
                     mainFunction = new Function(textField.getText());
-                    gc.clearRect(0, 0, 10000, 10000);
-                    renderAxis();
-                    renderFunction(mainFunction, Color.BLUE);
-                    textField.clear();
                     secantDrawer.setFunction(mainFunction);
                     derivativeGraphDrawer.setFunction(mainFunction);
                     taylorSeriesDrawer.setFunction(mainFunction);
+                    riemannSumDrawer.setFunction(mainFunction);
+                    updateRender();
                 }
             }
         });
@@ -119,18 +125,28 @@ public class Main extends Application {
         //create integral tab
         toolTab.getTabs().add(createIntegralTab());
 
+        console = new TextArea();
+        console.setEditable(false);
+        console.setFont(Font.font("monospace"));
+
+
+        GridPane canvasPane = new GridPane();
+        canvasPane.add(canvas, 0, 0);
+        canvasPane.add(console, 0, 1);
+        console.setText("Console: ");
 
         //arrange nodes
         gc = canvas.getGraphicsContext2D();
-        p = new BorderPane();
-        p.setCenter(canvas);
+        gc.setLineWidth(baseLineWeight);
+        b = new BorderPane();
+        b.setCenter(canvasPane);
         GridPane grid = new GridPane();
         grid.add(textField, 1, 0);
         textField.setMinWidth(1500);
-        p.setTop(grid);
-        p.setLeft(toolTab);
+        b.setTop(grid);
+        b.setLeft(toolTab);
 
-        graphicsScene = new Scene(p, width, height + 100);
+        graphicsScene = new Scene(b, width, height + 100);
         //start
         stage.setScene(graphicsScene);
         stage.show();
@@ -138,6 +154,10 @@ public class Main extends Application {
 
     }
 
+    /**
+     * A helper method which creates a tab with all the controls for visualization of the Taylor and Maclaurin series
+     * @return a Tab full of various controls with a light red background
+     */
     private Tab createTsTab() {
         Tab taylorSeriesTab = new Tab("Taylor Series");
         GridPane tsGridPane = new GridPane();
@@ -195,6 +215,25 @@ public class Main extends Application {
         });
         tsGridPane.add(tsApproxLoc, 0, 3);
 
+        CheckBox enableErrorVis = new CheckBox("Enable error information");
+        enableErrorVis.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                taylorSeriesDrawer.setErrorVisOn(enableErrorVis.isSelected());
+                updateRender();
+            }
+        });
+        tsGridPane.add(enableErrorVis, 0, 4);
+
+        tsErrorLoc = new Slider(bMIN_X, bMAX_X, (bMAX_X + bMIN_X) / 2);
+        tsErrorLoc.valueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                taylorSeriesDrawer.setTsErrorLoc(tsErrorLoc.getValue());
+                updateRender();
+            }
+        });
+        tsGridPane.add(tsErrorLoc, 0, 5);
 
 
         taylorSeriesTab.setContent(tsGridPane);
@@ -288,9 +327,62 @@ public class Main extends Application {
             @Override
             public void handle(ActionEvent event) {
                 riemannSumDrawer.setShowing(riemannCheckBox.isSelected());
+                writeConsole("You have entered the Riemann sum visualization");
                 updateRender();
             }
         });
+
+        //TODO
+        //prevent upper and lower bounds from crossing
+        //upper and lower bounds slider
+        lowerBound = new Slider(bMIN_X, bMAX_X, (bMAX_X + bMIN_X) / 2);
+        lowerBound.setTooltip(new Tooltip("Controls the lower bound of integration"));
+        lowerBound.valueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                riemannSumDrawer.setLowerBound(lowerBound.getValue());
+                updateRender();
+            }
+        });
+        upperBound = new Slider(bMIN_X, bMAX_X, (bMAX_X + bMIN_X) / 2);
+        upperBound.setTooltip(new Tooltip("Controls the upper bound of integration"));
+        upperBound.valueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                riemannSumDrawer.setUpperBound(upperBound.getValue());
+                updateRender();
+            }
+        });
+        integralGridPane.add(lowerBound, 0, 1);
+        integralGridPane.add(upperBound, 0, 2);
+
+        Slider numSteps = new Slider(1, 64, 1);
+        numSteps.setShowTickLabels(true);
+        numSteps.valueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                riemannSumDrawer.setNumSteps((int) numSteps.getValue());
+                numSteps.setValue((int) numSteps.getValue());
+                updateRender();
+            }
+        });
+        integralGridPane.add(numSteps, 0, 3);
+        //create UI to allow for choice of summation mode
+        GridPane riemannOrderPane = new GridPane();
+        ComboBox<String> orderChooser = new ComboBox(FXCollections.observableArrayList("1: Left Side",
+                "2: Right Side", "3: Minimum", "4: Maximum", "5: Middle" ));
+        orderChooser.setValue("1: Left Side");
+        orderChooser.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                riemannSumDrawer.setMode(Integer.parseInt(orderChooser.getValue().substring(0, 1)));
+                updateRender();
+            }
+        });
+        riemannOrderPane.add(orderChooser, 0, 0);
+        Label riemmanTypeExp = new Label("   Set Riemann type");
+        riemannOrderPane.add(riemmanTypeExp, 1, 0);
+        integralGridPane.add(riemannOrderPane, 0, 4);
 
         integralGridPane.add(riemannCheckBox, 0, 0);
         integralGridPane.setStyle(" -fx-background-color: blueviolet;");
@@ -392,6 +484,7 @@ public class Main extends Application {
      */
     public static void renderFunction(Function functionToRender, Color renderColor) {
         gc.beginPath();
+        gc.setLineWidth(baseLineWeight);
         for(double d = MIN_X; d < MAX_X; d += (5 / (double) XRES * zoomTransform)){
             double yValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[1];
             double xValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[0];
@@ -402,41 +495,103 @@ public class Main extends Application {
     }
 
     /**
-     * A method to render the graphs axis and labels
+     * A method to render the graphs axis
      */
     private void renderAxis() {
-        for(int i = 0; i < getWidth(); i++) {
-            double yValue = Graph.getPixelSpace(0, 0)[1];
-            gc.setFill(Color.BLACK);
-            gc.fillRect(i, yValue, 1, 1);
-        }
-        //Draw Y Axis
-        for(int i = 0; i < canvas.getHeight(); i++) {
-            gc.fillRect(Graph.getPixelSpace(0, 1)[0], i, 1, 1);
-        }
+        //Draw X axis
+        drawLineSegment(getMin_X(), 0, getMax_X(), 0, Color.BLACK, -1 * baseLineWeight / 3);
+        //Draw Y axis
+        drawLineSegment(0, getMIN_Y(), 0, getMAX_Y(), Color.BLACK, -1 * baseLineWeight / 3);
     }
 
+    /**
+     * Called every time something in the program occurs which changes the image on the canvas, this method first
+     * clears the canvas and then re-renders the necessary features and resets variables.
+     */
     private void updateRender() {
         gc.clearRect(0, 0, 10000, 10000);
-
+        riemannSumDrawer.draw();
         renderAxis();
         renderFunction(mainFunction, Color.BLUE);
         drvApproxLoc.setMax(MAX_X);
         drvApproxLoc.setMin(MIN_X);
         tsApproxLoc.setMax(MAX_X);
         tsApproxLoc.setMin(MIN_X);
+        tsErrorLoc.setMin(MIN_X);
+        tsErrorLoc.setMax(MAX_X);
+        lowerBound.setMin(MIN_X);
+        lowerBound.setMax(MAX_X);
+        upperBound.setMin(MIN_X);
+        upperBound.setMax(MAX_X);
         secantDrawer.draw();
         derivativeGraphDrawer.draw();
         taylorSeriesDrawer.draw();
-        System.out.println("Hello");
-
     }
 
+
+    public static void writeConsole(String text) {
+        console.setText(console.getText() + "\n" + text);
+    }
+
+    /**
+     * A function which draws a line between two points
+     * @param xOne x coordinate of point one
+     * @param yOne y coordinate of point one
+     * @param xTwo x coordinate of point two
+     * @param yTwo y coordinate of point two
+     */
     public static void drawLine(double xOne, double yOne, double xTwo, double yTwo) {
         double slope = (yTwo - yOne) / (xTwo - xOne);
-        String expression = new Double(yOne).toString() + "+" + new Double(slope).toString() + "*(x-" +
-                new Double(xOne).toString() + ")";
-        renderFunction(new Function(expression), Color.MEDIUMSEAGREEN);
+        List<Token> linearEquation = new ArrayList<>();
+        linearEquation.add(new Constant(yOne));
+        linearEquation.add(new Plus());
+        linearEquation.add(new Constant(slope));
+        linearEquation.add(new Times());
+        linearEquation.add(new LeftParens());
+        linearEquation.add(new Variable());
+        linearEquation.add(new Minus());
+        linearEquation.add(new Constant(xOne));
+        linearEquation.add(new RightParens());
+        renderFunction(new Function(linearEquation), Color.MEDIUMSEAGREEN);
+    }
+
+    public static void drawLineSegment(double xOne, double yOne, double xTwo, double yTwo, Color color, double deltaW) {
+        gc.setLineWidth(baseLineWeight + deltaW);
+        gc.beginPath();
+        gc.lineTo(Graph.getPixelSpace(xOne, 0)[0], Graph.getPixelSpace(0, yOne)[1]);
+        gc.lineTo(Graph.getPixelSpace(xTwo, 0)[0], Graph.getPixelSpace(0, yTwo)[1]);
+        gc.setStroke(color);
+        gc.stroke();
+    }
+
+    /**
+     * A static method which returns a number represented as a rounded string
+     * @param toRound a double representing an unrounded number
+     * @return a String representing the input rounded to the correct number of decimal places.
+     */
+    public static String round(double toRound) {
+        double minVisible = Math.pow (10, -1 * (roundLevel - 1));
+        if(toRound > -minVisible && toRound < minVisible) {
+            toRound = 0;
+            String zeroOut = "0.";
+            for (int i = 0; i < roundLevel; i++) {
+                zeroOut += "0";
+            }
+            return zeroOut;
+        }
+        String asString = Double.toString(toRound);
+
+        String outputString = asString.substring(0, asString.indexOf(".") + roundLevel);
+        int leastShown = Integer.parseInt(Character.toString(asString.charAt(asString.indexOf(".") + roundLevel)));
+        char greatestUnshown = asString.charAt(asString.indexOf(".") + roundLevel + 1);
+        if(Integer.parseInt(Character.toString(greatestUnshown)) >= 5) {
+            outputString += (leastShown + 1);
+
+        }
+        else {
+            outputString+=leastShown;
+        }
+        return outputString;
     }
 
     public static double getZoomTransform() {
@@ -479,7 +634,7 @@ public class Main extends Application {
         return height;
     }
 
-    public static void main(String[] args) {
-        launch(args);
+    public static void main(String[] args)  {
+        launch(args );
     }
 }

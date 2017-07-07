@@ -8,8 +8,8 @@ public class Point {
 
     private double x;
     private double y;
-    private int outerSize = 15;
-    private int innerSize = 5;
+    private static int outerSize = 15;
+    private static int innerSize = 5;
     private Color color;
 
     public Point(double x, double y, Color color) {
@@ -31,4 +31,7 @@ public class Point {
 
     }
 
+    public static int getOuterSize() {
+        return outerSize;
+    }
 }

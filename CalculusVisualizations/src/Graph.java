@@ -31,6 +31,26 @@ public class Graph {
         return pixelSpace;
     }
 
+    public static double getLengthY(double y) {
+        double minY = Main.getMIN_Y();
+        double maxY = Main.getMAX_Y();
+        int yRes = Main.getYRES();
+        //get relative positions between max and min
+        double relativeY = y / Math.abs(maxY - minY);
+        double yValue = (Main.getHeight() * relativeY);
+        return yValue;
+    }
+
+    public static double getLengthX(double x) {
+        double minX = Main.getMin_X();
+        double maxX = Main.getMax_X();
+        int xRes = Main.getXRES();
+        //get relative positions between max and min
+        double relativeX = x / Math.abs(maxX - minX);
+        double xValue = (Main.getWidth() * relativeX);
+        return xValue;
+    }
+
     /**@param x coordinate that corresponds to a column in pixel space
      * @return that column as an x coordinate in coordinate space
      */

@@ -157,6 +157,7 @@ Out 9:17
 ### Work Done
 Today, I created the first iteration of the derivative visualization. I wrote code to allow secant lines to be drawn with varying distances between the points. 
 I added support for negative numbers and subtraction in the Function class
+
 ### Learning Done
 I learned how to use observable properties in javaFX, that is write code that acts when one of an objects field changes. I also learned about the Slider class.
 
@@ -164,11 +165,12 @@ I learned how to use observable properties in javaFX, that is write code that ac
 
 ### Work Times
 In: 11:44 AM (West Coast Time)  
-Out: 4:02 PM (Mountain Time)  
+Out: 4:02 PM (Mountain Time) 
 In: 10:10 PM  
-
+Out: 12:28 PM (next day)  
 
 ### Total Time Worked
+   5:36
 
 ### Work Done
 Separated code for secant lines, derivative graphs and the Taylor Series into classes  
@@ -177,3 +179,55 @@ Attempted without success to fix sudden loss of control and pin wheel of death
 
 ### Learning Done
 
+## July 5th, 2017
+
+### Work Times
+In: 11:51 AM
+Out: 2:16 PM
+In: 10:04 PM
+Out 10:34 PM
+
+~1:00 In small chunks while driving through Bryce Canyon National Park
+
+### Total Time Worked
+
+### Work Done
+Worked on the Riemann sum visualization
+
+### Learning Done
+
+## July 6th, 2017
+
+### Work Times
+In: 10:10 AM
+Out: 10:40 AM
+In: 11:15 AM
+Out: 12:30 PM (West Coast Time)
+
+### Total Time Worked
+
+### Work Done
+Added purple bars to demarcate the zone of Riemann summation  
+Added feature to the Taylor Series visualization that allows the user to see the error of the polynomial approximation.  
+
+### Learning Done
+
+## July 7th, 2017
+
+### Work Times
+In: 11:45 AM
+Out: 12:34 PM
+In: 1:43 PM
+
+
+### Total Time Worked
+
+### Work Done
+Fixed bug causing occasional catastrophic errors, preventing further execution of the program, when using the secant line visualizer.  
+Created method to round output values before displaying them to the user.
+Switched the render axis method over to the new method of drawing lines.  
+Improved commenting.  
+ 
+
+
+### Learning Done
