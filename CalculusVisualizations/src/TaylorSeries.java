@@ -1,486 +1,115 @@
 import Tokens.*;
-import Tokens.Operators.Divide;
-import Tokens.Operators.Exponentiate;
-import Tokens.Operators.Plus;
-import Tokens.Operators.Times;
-import com.sun.tools.hat.internal.model.HackJavaValue;
-import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.geometry.Side;
-import javafx.scene.canvas.Canvas;
+import Tokens.Operators.*;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.*;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.stage.Stage;
-import javafx.scene.Scene;
-import sun.tools.jconsole.inspector.XObject;
+import javafx.scene.text.Font;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TaylorSeries extends Application {
-    private Stage stage;
-    private static Canvas canvas;
-    private static GraphicsContext gc;
-    private BorderPane p;
-    private Scene graphicsScene;
-    private Button tsRender;
-    private TextField textField;
-    private Slider approxLoc;
+public class TaylorSeries extends Visualizer{
+    private int order;
+    private double xPos;
+    private boolean maclaurin = true;
+    private List<Function> taylorPolynomials;
+    private boolean errorVisOn = false;
+    private double tsErrorLoc;
+    private String error;
 
-    //Window size tracking, b prefix indicates that it is the base value
-    private static double MIN_X = 0;
-    private static double MAX_X = 4;
-    private static double MIN_Y = -1;
-    private static double MAX_Y = 8;
-    private final static double bMIN_X = -3.14;
-    private final static double bMAX_X = 3.14;
-    private final static double bMIN_Y = -1.1;
-    private final static double bMAX_Y = 1.1;
-
-    final static int XRES = 200;
-    final static int YRES = 400;
-
-    final static int width = (int) ( Math.abs(bMAX_X - bMIN_X) * XRES );
-    final static int height = (int)( Math.abs(bMAX_Y - bMIN_Y) * YRES );
-
-    private double deltaXCoord = 0;
-    private double deltaYCoord = 0;
-
-    private int taylorSeriesOrder = 0;
-    private double taylorCentered = 0;
-
-    private List<Token> taylorPolynomial = new ArrayList<>();
-
-    private double MouseXPos = 0;
-    private double MouseYPos = 0;
-
-    private double xOffset = 0;
-    private double yOffset = 0;
-
-    static double zoomTransform = 1;
-    boolean isMouseDragging = false;
-
-    private int drvOrder = 1;
-    private boolean showDrv = false;
-    boolean showCritPoints = false;
-    private boolean secantEnabled = false;
-    private double hValue = 1;
-
-    private Function mainFunction = new Function("sin(x)");
-    private Function taylorFunction = new Function("10000");
-    private List<Point> critPointList = new ArrayList<>();
-
-
-    public void start(Stage primaryStage) {
-        //init
-        stage = primaryStage;
-        stage.setTitle("Taylor Series");
-        resetWindow();
-
-        //create UI nodes
-        canvas = createCanvas();
-
-        tsRender = new Button("Render Taylor Series");
-        tsRender.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                renderTS();
-            }
-        });
-
-        textField = new TextField();
-        textField.setPromptText("Type your function here");
-        textField.setOnKeyReleased(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                if(event.getCode().toString().equals("ENTER")) {
-                    System.out.println(textField.getText());
-                    mainFunction = new Function(textField.getText());
-                    taylorPolynomial = new ArrayList<>();
-                    taylorFunction = new Function("10000");
-                    gc.clearRect(0, 0, 10000, 10000);
-                    renderAxis();
-                    renderFunction(mainFunction, Color.BLUE);
-                    textField.clear();
-                }
-            }
-        });
-
-
-        //create
-        TabPane toolTab = new TabPane();
-        toolTab.setSide(Side.TOP);
-
-        //create ts tab
-        toolTab.getTabs().add(createTsTab());
-
-        //create drv tab
-        Tab drvTab = new Tab("Derivative");
-        GridPane drvGridPane = new GridPane();
-        drvGridPane.setVgap(20);
-
-        CheckBox drvCheckBox = new CheckBox("Render the derivative");
-        drvCheckBox.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                System.out.println("Hello");
-                if(drvCheckBox.isSelected()) {
-                    showDrv = true;
-                }
-                else {
-                    showDrv = false;
-                }
-                updateRender();
-            }
-        });
-        drvGridPane.add(drvCheckBox, 0, 0);
-
-        GridPane drvOrderPane = new GridPane();
-        ComboBox<Integer> orderChooser = new ComboBox(FXCollections.observableArrayList(1, 2, 3, 4));
-        orderChooser.setValue(1);
-        orderChooser.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                drvOrder = orderChooser.getValue();
-                System.out.println(drvOrder);
-                updateRender();
-            }
-        });
-        drvOrderPane.add(orderChooser, 0, 0);
-        Label drvOrderExp = new Label("   Set derivative order");
-        drvOrderPane.add(drvOrderExp, 1, 0);
-        drvGridPane.add(drvOrderPane, 0, 1);
-
-
-        CheckBox secantCheckBox = new CheckBox("Enable secant tool");
-        secantCheckBox.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                if(secantCheckBox.isSelected()) {
-                    secantEnabled = true;
-                    approxLoc.setValueChanging(true);
-                }
-                else {
-                    secantEnabled = false;
-                    approxLoc.setValueChanging(false);
-
-                }
-                updateRender();
-            }
-        });
-
-        approxLoc = new Slider(bMIN_X, bMAX_X, (bMAX_X + bMIN_X) / 2);
-        approxLoc.valueProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                updateRender();
-            }
-        });
-
-        drvGridPane.add(secantCheckBox, 0 , 2);
-
-
-
-        drvGridPane.add(approxLoc, 0, 4);
-
-
-        drvGridPane.add(new Label("Value of h"), 0, 5);
-
-
-        Slider hValueSlider = new Slider(0.01, 2, 1);
-        hValueSlider.valueProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                hValue = hValueSlider.getValue();
-                updateRender();
-            }
-        });
-        drvGridPane.add(hValueSlider, 0, 6);
-        drvTab.setContent(drvGridPane);
-        drvGridPane.setStyle(" -fx-background-color: mediumseagreen;");
-        drvGridPane.setPadding(new Insets(20, 10, 10, 10));
-        toolTab.getTabs().add(drvTab);
-
-
-
-
-        //arrange nodes
-        gc = canvas.getGraphicsContext2D();
-        p = new BorderPane();
-        p.setCenter(canvas);
-        GridPane grid = new GridPane();
-        grid.add(textField, 1, 0);
-        textField.setMinWidth(1500);
-        p.setTop(grid);
-        p.setLeft(toolTab);
-
-        graphicsScene = new Scene(p, width, height + 100);
-        //start
-        stage.setScene(graphicsScene);
-        stage.show();
-        updateRender();
-
+    public TaylorSeries(int order, double xPos, Function function) {
+        this.order = order;
+        this.xPos = xPos;
+        this.function = function;
+        createTaylorPolynomials();
     }
 
-
-    private Tab createTsTab() {
-        Tab taylorSeriesTab = new Tab("Taylor Series");
-        GridPane tsGridPane = new GridPane();
-        tsGridPane.setHgap(10);
-        tsGridPane.add(tsRender, 0, 0);
-        taylorSeriesTab.setContent(tsGridPane);
-        tsGridPane.setStyle(" -fx-background-color: indianred;");
-        tsGridPane.setPadding(new Insets(20, 10, 10, 10));
-        return taylorSeriesTab;
-    }
-
-
-    /**
-     * A method, called whenever the Render Taylor Series button is pressed by the user, that sets generates a list of
-     * tokens representing a Taylor Series of the appropriate order and uses that list to set the taylorFunction
-     */
-    private void renderTS() {
-        if(taylorSeriesOrder != 0)
-            taylorPolynomial.add(new Plus());
-        taylorPolynomial.add(new LeftParens());
-        taylorPolynomial.add(new Constant(mainFunction.takeDerivative(taylorSeriesOrder, taylorCentered)));
-        taylorPolynomial.add(new Divide());
-        taylorPolynomial.add(new Constant(Function.factorial(taylorSeriesOrder)));
-        taylorPolynomial.add(new RightParens());
-        if(taylorSeriesOrder != 0) {
-            taylorPolynomial.add(new Times());
-            taylorPolynomial.add(new LeftParens());
-            taylorPolynomial.add(new Variable());
-            taylorPolynomial.add(new Exponentiate());
-            taylorPolynomial.add(new Constant(taylorSeriesOrder));
-            taylorPolynomial.add(new RightParens());
+    public void draw() {
+        if (showing) {
+            Main.renderFunction(taylorPolynomials.get(order - 1), Color.INDIANRED);
+            new Point(xPos, function.computeFunc(xPos), Color.INDIANRED).drawPoint();
+            if (errorVisOn) {
+                calculateError();
+                double realValue = function.computeFunc(tsErrorLoc);
+                double errorValue = taylorPolynomials.get(order - 1).computeFunc(tsErrorLoc);
+                new Point(tsErrorLoc, errorValue, Color.INDIANRED.darker()).drawPoint();
+                new Point(tsErrorLoc, realValue, Color.INDIANRED.darker()).drawPoint();
+                Main.drawLineSegment(tsErrorLoc, errorValue, tsErrorLoc, realValue, Color.INDIANRED.darker(), 0.0);
+                GraphicsContext gc = Main.getGc();
+                gc.setFill(Color.BLACK);
+                gc.setFont(Font.font(15));
+                gc.fillText("Error: "
+                                + error, Graph.getPixelSpace(tsErrorLoc, 0)[0] + 20,
+                        Graph.getPixelSpace(0, realValue)[1]);
+            }
         }
-        taylorSeriesOrder++;
-        taylorFunction = new Function(taylorPolynomial);
-        updateRender();
     }
 
     /**
-     * A method which resets the variables representing the portion of the graph rendered to their base value
+     *To avoid the computationally intensive task of calculating the Taylor Series having to be done on every frame rendered,
+     * This function pregenertes the Taylor Polynomials required whenever a new function is entered
      */
-    private void resetWindow() {
-        MIN_X = bMIN_X;
-        MIN_Y = bMIN_Y;
-        MAX_X = bMAX_X;
-        MAX_Y = bMAX_Y;
-    }
-
-    /**
-     * A helper method to create the canvas and its event handlers
-     */
-    private Canvas createCanvas() {
-
-        Canvas newCanvas = new Canvas(width, height);
-        newCanvas.addEventHandler(MouseEvent.MOUSE_MOVED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if(!isMouseDragging) {
-                    MouseXPos = event.getX();
-                    MouseYPos = event.getY();
+    public void createTaylorPolynomials() {
+        List<Function> newTaylorPolynomials = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            List<Token> taylorPolynomial = new ArrayList<>();
+            for (int j = 0; j < i + 1; j++) {
+                if(j != 0)
+                    taylorPolynomial.add(new Plus());
+                taylorPolynomial.add(new LeftParens());
+                taylorPolynomial.add(new Constant(function.takeDerivative(j, xPos)));
+                taylorPolynomial.add(new Divide());
+                taylorPolynomial.add(new Constant(Function.factorial(j)));
+                taylorPolynomial.add(new RightParens());
+                if(j != 0) {
+                    taylorPolynomial.add(new Times());
+                    taylorPolynomial.add(new LeftParens());
+                    taylorPolynomial.add(new LeftParens());
+                    taylorPolynomial.add(new Variable());
+                    taylorPolynomial.add(new Minus());
+                    taylorPolynomial.add(new Constant(xPos));
+                    taylorPolynomial.add(new RightParens());
+                    taylorPolynomial.add(new Exponentiate());
+                    taylorPolynomial.add(new Constant(j));
+                    taylorPolynomial.add(new RightParens());
                 }
             }
-        });
-        newCanvas.addEventHandler(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                isMouseDragging = true;
-                double deltaXPix = event.getX() - MouseXPos;
-                double deltaYPix = event.getY() - MouseYPos;
-                deltaXCoord = (deltaXPix / XRES) * zoomTransform;
-                deltaYCoord = (deltaYPix / YRES) * zoomTransform;
-                double xDiff = Math.abs((bMIN_X - xOffset) - (bMAX_X  - xOffset));
-                double newXDiff = zoomTransform * xDiff;
-                double movNeccesaryToAcheiveX = (newXDiff - xDiff) / 2;
-                MIN_X = (bMIN_X - deltaXCoord - xOffset) - movNeccesaryToAcheiveX;
-                MAX_X = (bMAX_X  - deltaXCoord - xOffset) + movNeccesaryToAcheiveX;
-                double yDiff = Math.abs((bMIN_Y - yOffset) - (bMAX_Y  - yOffset));
-                double newYDiff = zoomTransform * yDiff;
-                double movNeccesaryToAcheiveY = (newYDiff - yDiff) / 2;
-                MIN_Y = (bMIN_Y  + yOffset + deltaYCoord) - movNeccesaryToAcheiveY;
-                MAX_Y = (bMAX_Y  + yOffset + deltaYCoord) + movNeccesaryToAcheiveY;
-                updateRender();
-                isMouseDragging = false;
-            }
-        });
-        newCanvas.addEventHandler(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                xOffset += deltaXCoord;
-                yOffset += deltaYCoord;
-                deltaXCoord = 0;
-                deltaYCoord = 0;
-            }
-        });
-
-        newCanvas.addEventHandler(ScrollEvent.SCROLL, new EventHandler<ScrollEvent>() {
-            @Override
-            public void handle(ScrollEvent event) {
-                double  yScroll = event.getDeltaY();
-                if(yScroll < 0) {
-                    zoomTransform *= 1.1;
-                } else if(yScroll > 0) {
-                    zoomTransform *=.9;
-                }
-                double xDiff = Math.abs((bMIN_X - xOffset) - (bMAX_X  - xOffset));
-                double newXDiff = zoomTransform * xDiff;
-                double movNecessaryToAchieveX = (newXDiff - xDiff) / 2;
-                MIN_X = (bMIN_X - xOffset) - movNecessaryToAchieveX;
-                MAX_X = (bMAX_X  - xOffset) + movNecessaryToAchieveX;
-
-                double yDiff = Math.abs((bMIN_Y - yOffset) - (bMAX_Y  - yOffset));
-                double newYDiff = zoomTransform * yDiff;
-                double mobNecessaryToAchieveY = (newYDiff - yDiff) / 2;
-                MIN_Y = (bMIN_Y  + yOffset) - mobNecessaryToAchieveY;
-                MAX_Y = (bMAX_Y  + yOffset) + mobNecessaryToAchieveY;
-                gc.clearRect(0, 0, 10000, 10000);
-                updateRender();
-                isMouseDragging = false;
-
-            }
-        });
-        return  newCanvas;
-    }
-
-    /**
-     * A method to render the main function
-     * @param functionToRender the function object to be rendered
-     * @param renderColor the color with which the function shall be rendered
-     */
-    private void renderFunction(Function functionToRender, Color renderColor) {
-        long startTime = System.currentTimeMillis();
-        gc.beginPath();
-        for(double d = MIN_X; d < MAX_X; d += (5 / (double) XRES * zoomTransform)){
-            double yValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[1];
-            double xValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[0];
-            gc.lineTo(xValue, yValue);
+            newTaylorPolynomials.add(new Function(taylorPolynomial));
         }
-        gc.setStroke(renderColor);
-        gc.stroke();
-//        long endTime = System.currentTimeMillis();
-//        System.out.println("Render time was: " + (endTime - startTime) + " milliseconds");
+        taylorPolynomials = newTaylorPolynomials;
     }
 
-    private void renderDerivative(int order) {
-        gc.beginPath();
-        for(double d = MIN_X; d < MAX_X; d += (5 / (double) XRES * zoomTransform)){
-            double yValue = Graph.getPixelSpace(d, mainFunction.takeDerivative(order, d))[1];
-            double xValue = Graph.getPixelSpace(d, 5)[0];
-            gc.lineTo(xValue, yValue);
-        }
-        gc.setStroke(Color.MEDIUMSEAGREEN);
-        gc.stroke();
+    public void calculateError() {
+        double errorValue  = taylorPolynomials.get(order - 1).computeFunc(tsErrorLoc) - function.computeFunc(tsErrorLoc);
+        error = Main.round(errorValue);
     }
 
-
-    /**
-     * A method to render the graphs axis and labels
-     */
-    private void renderAxis() {
-        for(int i = 0; i < getWidth(); i++) {
-            double yValue = Graph.getPixelSpace(0, 0)[1];
-            gc.setFill(Color.BLACK);
-            gc.fillRect(i, yValue, 1, 1);
-        }
-        //Draw Y Axis
-        for(int i = 0; i < canvas.getHeight(); i++) {
-            gc.fillRect(Graph.getPixelSpace(0, 1)[0], i, 1, 1);
-        }
+    public void setOrder(int order) {
+        this.order = order;
     }
 
-    private void updateRender() {
-        gc.clearRect(0, 0, 10000, 10000);
-        renderAxis();
-        renderFunction(mainFunction, Color.BLUE);
-        renderFunction(taylorFunction, Color.INDIANRED);
-        approxLoc.setMax(MAX_X);
-        approxLoc.setMin(MIN_X);
-        if(secantEnabled) {
-            double xOne = approxLoc.getValue();
-            double yOne = mainFunction.computeFunc(approxLoc.getValue());
-            double xTwo = approxLoc.getValue() + hValue;
-            double yTwo = mainFunction.computeFunc(approxLoc.getValue() + hValue);
-            new Point(xOne, yOne, Color.MEDIUMSEAGREEN).drawPoint();
-            new Point(xTwo, yTwo, Color.MEDIUMSEAGREEN).drawPoint();
-            drawLine(xOne, yOne, xTwo, yTwo);
-        }
-        if(showDrv) {
-            renderDerivative(drvOrder);
-        }
-        for(Point p : critPointList) {
-            p.drawPoint();
-        }
+    public void setFunction(Function function) {
+        this.function = function;
+        createTaylorPolynomials();
     }
 
-    private void drawLine(double xOne, double yOne, double xTwo, double yTwo) {
-        double slope = (yTwo - yOne) / (xTwo - xOne);
-        System.out.println("Slope = " + slope);
-        String expression = new Double(yOne).toString() + "+" + new Double(slope).toString() + "*(x-" +
-                new Double(xOne).toString() + ")";
-        System.out.println("Expression = " + expression);
-
-        renderFunction(new Function(expression), Color.MEDIUMSEAGREEN);
+    public void setxPos(double xPos) {
+        this.xPos = xPos;
     }
 
-    public static double getZoomTransform() {
-        return zoomTransform;
+    public void setMaclaurin(boolean maclaurin) {
+        this.maclaurin = maclaurin;
     }
 
-    public static GraphicsContext getGc() {
-        return gc;
+    public boolean isMaclaurin() {
+        return maclaurin;
     }
 
-    public static double getMIN_Y() {
-        return MIN_Y;
+    public void setErrorVisOn(boolean errorVisOn) {
+        this.errorVisOn = errorVisOn;
     }
 
-    public static double getMAX_Y() {
-        return MAX_Y;
-    }
-
-    public static int getXRES() {
-        return XRES;
-    }
-
-    public static int getYRES() {
-        return YRES;
-    }
-
-    public static double getMin_X() {
-        return MIN_X;
-    }
-
-    public static double getMax_X() {
-        return MAX_X;
-    }
-
-    public static int getWidth() {
-        return width;
-    }
-
-    public static int getHeight() {
-        return height;
-    }
-
-    public static void main(String[] args) {
-     launch(args);
+    public void setTsErrorLoc(double tsErrorLoc) {
+        this.tsErrorLoc = tsErrorLoc;
     }
 }
+

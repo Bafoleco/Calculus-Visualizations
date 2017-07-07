@@ -5,19 +5,22 @@ import javafx.scene.paint.*;
  * Created by Bay Foley-Cox on 6/28/17.
  */
 public class Point {
-    double x;
-    double y;
-    int outerSize = 15;
-    int innerSize = 5;
-    Color color;
+
+    private double x;
+    private double y;
+    private static int outerSize = 15;
+    private static int innerSize = 5;
+    private Color color;
+
     public Point(double x, double y, Color color) {
         this.x = x;
         this.y = y;
         this.color = color;
     }
+
     public void drawPoint() {
-        double zoom = TaylorSeries.getZoomTransform();
-        GraphicsContext gc = TaylorSeries.getGc();
+        double zoom = Main.getZoomTransform();
+        GraphicsContext gc = Main.getGc();
         gc.setFill(new Color(color.getRed(), color.getGreen(), color.getBlue(), .8));
         double pixX = Graph.getPixelSpace(x, y)[0];
         double pixY = Graph.getPixelSpace(x, y)[1];
@@ -28,4 +31,7 @@ public class Point {
 
     }
 
+    public static int getOuterSize() {
+        return outerSize;
+    }
 }
