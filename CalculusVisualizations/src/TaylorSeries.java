@@ -247,6 +247,8 @@ public class TaylorSeries extends Application {
         tsGridPane.setPadding(new Insets(20, 10, 10, 10));
         return taylorSeriesTab;
     }
+
+
     /**
      * A method, called whenever the Render Taylor Series button is pressed by the user, that sets generates a list of
      * tokens representing a Taylor Series of the appropriate order and uses that list to set the taylorFunction
