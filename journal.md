@@ -1,4 +1,4 @@
-# Summer Independent Study Journal
+	# Summer Independent Study Journal
 
 ## June 17th, 2017
 

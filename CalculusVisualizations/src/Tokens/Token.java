@@ -109,7 +109,7 @@ public abstract class Token {
                 stack.add(((BigOperation)t).stackAction(inputList));
             }
         }
-        return stack.get(0);
+            return stack.get(0);
     }
     public double getValue() {
         return 0;

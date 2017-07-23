@@ -7,7 +7,7 @@ import javafx.scene.text.Font;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TaylorSeries extends Visualizer{
+public class TaylorSeries extends Visualizer {
     private int order;
     private double xPos;
     private boolean maclaurin = true;
