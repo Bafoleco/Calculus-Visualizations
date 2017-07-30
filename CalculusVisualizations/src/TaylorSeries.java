@@ -63,7 +63,7 @@ public class TaylorSeries extends Application {
     double zoomTransform = 1;
     boolean isMouseDragging = false;
 
-    Function mainFunction = new Function("2.718281828^x");
+    Function mainFunction = new Function("sin(x)");
     Function taylorFunction = new Function("10000");
 
     public void start(Stage primaryStage) {
