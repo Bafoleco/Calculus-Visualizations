@@ -219,7 +219,6 @@ In: 11:45 AM
 Out: 12:34 PM
 In: 1:43 PM
 
-
 ### Total Time Worked
 
 ### Work Done
@@ -228,6 +227,29 @@ Created method to round output values before displaying them to the user.
 Switched the render axis method over to the new method of drawing lines.  
 Improved commenting.  
  
+### Learning Done
 
+## August 3rd, 2017
+
+### Work Times
+
+In: 11:10  
+Out: 12:05
+In: 1:40
+Out: 3:55
+In: 5:24
+Out: 6:30
+
+### Total Time Worked
+4:16
+
+### Work Done
+I wrote html and css code to create the website http://bayfoleycox.com/. The purpose of the site is to make the calculus visualizer 
+more accesible. Unfortunately, due to internet browsers prioritizing security over Oracle's well being, it only runs on internet exploer
+and maybe Safari. Even in these browsers, you have to make an exemption to security settings for http://bayfoleycox.com/ in order for the code to run.
 
 ### Learning Done
+I did intense research on a wide variety of webhosting services. I eventually found that Github pages was the best  webhosting
+service available in my (very low) rice range. I learned how to configure DNS records to connect my domain, purchased through Hover to 
+my Github pages account. I also refamiliarized myself with basic html, including going beyond what we learned in class, incoporating 
+css and multiple pages. 
