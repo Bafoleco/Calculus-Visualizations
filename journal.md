@@ -259,11 +259,17 @@ css and multiple pages.
 ### Work Times
 
 In: 1:40PM
+Out: 5:12 PM
 
 ### Total Time Worked
 
 ### Work Done
+Fixed the (formerly) flawed system of expression input:
 Added support for mathamtical constants pi & e  
 Added support for the cos, tan, sqrt, ln, log, abs(including support for the use of |  |), floor, and ceiling functions
+Fixed issue where unparsable expresssions caused an infinite loop stopping execution  
+Fixed issue where parseable but invalid (e.g "sin(x^/)") would run. Now, when these expressions are entered, an error message is shown and the mainfunction reset.  
+Fixed (for now) issue where functions with limited domains rendered with solid blocks of color. 
+
 ### Learning Done
 
