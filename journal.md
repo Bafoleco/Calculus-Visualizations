@@ -253,3 +253,17 @@ I did intense research on a wide variety of webhosting services. I eventually fo
 service available in my (very low) rice range. I learned how to configure DNS records to connect my domain, purchased through Hover to 
 my Github pages account. I also refamiliarized myself with basic html, including going beyond what we learned in class, incoporating 
 css and multiple pages. 
+
+## August 7th, 2017
+
+### Work Times
+
+In: 1:40PM
+
+### Total Time Worked
+
+### Work Done
+Added support for mathamtical constants pi & e  
+Added support for the cos, tan, sqrt, ln, log, abs(including support for the use of |  |), floor, and ceiling functions
+### Learning Done
+
