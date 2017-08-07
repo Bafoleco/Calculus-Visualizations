@@ -1,4 +1,4 @@
-# Summer Independent Study Journal
+	# Summer Independent Study Journal
 
 ## June 17th, 2017
 
@@ -96,3 +96,138 @@ And, although implementing fully javadoc comments is undoubtedly a work in progr
 
 ### Learning Done
 Today, I researched the exact implementation of the Shunting Yard algorithm especially with regards to operator precedence and associativity. I also watched several videos on Taylor's remainder theorem and researched optimum methods for machine differentiation. On the latter point, I found no satisfactory solution to the problem I face. 
+
+## June 24th, 2017
+
+### Work Times
+In: 9:35 PM
+Out: 12:12 AM (Next Day) 
+
+### Total Time Worked
+2:37
+
+### Work Done
+Wrote experimental code for duel number computation.
+
+### Learning Done
+Today, I spent time on the difficult issue of the accurate compuatation of higher order derivatives in code. I read and watched videos about automatic differentiation and duel numbers and especially their extension to higher dimensions.
+
+## June 27th, 2017
+
+### Work Times
+In: 4:30  PM
+Out: 5:20 PM
+
+### Total Time Worked
+0:50
+
+### Work Done
+Yesterday I arrived in California, where I will be staying with my Grandparents fo several weeks. So today I setup Git, IntelliJ and the Repository on their computer.
+
+### Work Done
+Yesterday I arrived in California, where I will be staying with my Grandparents fo several weeks. So today I setup Git, IntelliJ and the Repository on their computer.
+
+## June 28th, 2017
+
+### Work Times
+My work today was divided into 3 sessions of roughly equal length, unfortunately I lost t
+Out: 12:41 AM(Next day)
+### Total Time Worked
+5:00 (estimated, likely understatement) 
+### Work Done
+Today, I worked on creating the UI that would combine all the tools I have built and will build into one smooth and visually appealing application.   
+I created a method to do all rendering updates without having to write out 6 lines of code every time  
+I wrote several other methods like this to clean up the code base  
+I created a Point class and a method for graphing those points
+I added the ability to graph derivatives.
+
+### Learning Done
+I spent large ammounts of time reading through the JavaFX documentation on various nodes as I was creating the UI
+
+
+## June 29th, 2017
+
+### Work Times
+In: 5:39 PM  
+Out: 6:25  
+In 7:02  
+Out 9:17  
+### Total Time Worked
+3:29
+### Work Done
+Today, I created the first iteration of the derivative visualization. I wrote code to allow secant lines to be drawn with varying distances between the points. 
+I added support for negative numbers and subtraction in the Function class
+
+### Learning Done
+I learned how to use observable properties in javaFX, that is write code that acts when one of an objects field changes. I also learned about the Slider class.
+
+## July 4th, 2017
+
+### Work Times
+In: 11:44 AM (West Coast Time)  
+Out: 4:02 PM (Mountain Time) 
+In: 10:10 PM  
+Out: 12:28 PM (next day)  
+
+### Total Time Worked
+   5:36
+
+### Work Done
+Separated code for secant lines, derivative graphs and the Taylor Series into classes  
+Added UI for Taylor Series, included options to choose order, the point to approximate and whether it is a maclaurin series  
+Attempted without success to fix sudden loss of control and pin wheel of death
+
+### Learning Done
+
+## July 5th, 2017
+
+### Work Times
+In: 11:51 AM
+Out: 2:16 PM
+In: 10:04 PM
+Out 10:34 PM
+
+~1:00 In small chunks while driving through Bryce Canyon National Park
+
+### Total Time Worked
+
+### Work Done
+Worked on the Riemann sum visualization
+
+### Learning Done
+
+## July 6th, 2017
+
+### Work Times
+In: 10:10 AM
+Out: 10:40 AM
+In: 11:15 AM
+Out: 12:30 PM (West Coast Time)
+
+### Total Time Worked
+
+### Work Done
+Added purple bars to demarcate the zone of Riemann summation  
+Added feature to the Taylor Series visualization that allows the user to see the error of the polynomial approximation.  
+
+### Learning Done
+
+## July 7th, 2017
+
+### Work Times
+In: 11:45 AM
+Out: 12:34 PM
+In: 1:43 PM
+
+
+### Total Time Worked
+
+### Work Done
+Fixed bug causing occasional catastrophic errors, preventing further execution of the program, when using the secant line visualizer.  
+Created method to round output values before displaying them to the user.
+Switched the render axis method over to the new method of drawing lines.  
+Improved commenting.  
+ 
+
+
+### Learning Done
