@@ -1,6 +1,4 @@
-package Tokens.Operators;
-
-import Tokens.*;
+package tokens.operators;
 
 public class Exponentiate extends Operator {
 

@@ -1,4 +1,4 @@
-package Tokens.Operators;
+package tokens.operators;
 
 public class Divide extends Operator {
     public Divide() {

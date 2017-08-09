@@ -1,6 +1,6 @@
-package Tokens.BigOperations;
+package tokens.bigoperations;
 
-import Tokens.Token;
+import tokens.Token;
 
 import java.util.List;
 

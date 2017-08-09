@@ -1,6 +1,8 @@
-package Tokens;
-import Tokens.BigOperations.BigOperation;
-import Tokens.Operators.Operator;
+package tokens;
+import main.Function;
+import main.Main;
+import tokens.bigoperations.BigOperation;
+import tokens.operators.Operator;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,27 +91,38 @@ public abstract class Token {
      * @return the value of the expression when evaluated.
      */
     public static double reversePolishCompute(List<Token> rpnTokens) {
-        List<Double> stack = new ArrayList<>();
-        for(Token t: rpnTokens) {
-            if(t.getClass().getSimpleName().equals("Constant")) {
-                stack.add(((Constant) t).getValue());
-            }
-            else if(t.getClass().getSuperclass().getSimpleName().equals("Operator")) {
-                double a = stack.remove(stack.size() -  1);
-                double b = stack.remove(stack.size() -  1);
-                stack.add(((Operator)t).stackAction(a, b));
-            }
-            else if(t.getClass().getSuperclass().getSimpleName().equals("BigOperation")) {
-                //grab required values from top of stack
-                int inputNum = ((BigOperation)t).getArgsTaken();
-                List<Double> inputList = new ArrayList<>();
-                for(int i = 0; i < inputNum; i++) {
-                    inputList.add(stack.remove(stack.size() - 1));
+        double value = 1000000;
+        try {
+            List<Double> stack = new ArrayList<>();
+            for(Token t: rpnTokens) {
+                if(t.getClass().getSimpleName().equals("Constant")) {
+                    stack.add(((Constant) t).getValue());
                 }
-                stack.add(((BigOperation)t).stackAction(inputList));
+                else if(t.getClass().getSuperclass().getSimpleName().equals("Operator")) {
+                    double a = stack.remove(stack.size() -  1);
+                    double b = stack.remove(stack.size() -  1);
+                    stack.add(((Operator)t).stackAction(a, b));
+                }
+                else if(t.getClass().getSuperclass().getSimpleName().equals("BigOperation")) {
+                    //grab required values from top of stack
+                    int inputNum = ((BigOperation)t).getArgsTaken();
+                    List<Double> inputList = new ArrayList<>();
+                    for(int i = 0; i < inputNum; i++) {
+                        inputList.add(stack.remove(stack.size() - 1));
+                    }
+                    stack.add(((BigOperation)t).stackAction(inputList));
+                }
             }
+            value = stack.get(0);
         }
-            return stack.get(0);
+        catch (ArrayIndexOutOfBoundsException e) {
+            Main.writeConsole("ERROR: ArrayIndexOutOfBoundsException in reversePolishCompute(). This indicates the " +
+                    "expression entered was not valid.\nPlease try again.", true);
+            Main.resetMainFunction(new Function(""));
+        }
+        finally {
+            return value;
+        }
     }
     public double getValue() {
         return 0;

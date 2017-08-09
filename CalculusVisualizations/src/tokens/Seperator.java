@@ -1,6 +1,4 @@
-package Tokens;
-
-import Tokens.Token;
+package tokens;
 
 public class Seperator extends Token {
 }

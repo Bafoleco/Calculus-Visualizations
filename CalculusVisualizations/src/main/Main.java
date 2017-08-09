@@ -1,3 +1,8 @@
+package main;
+
+import javafx.scene.layout.Background;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.*;
 import tokens.*;
 import tokens.operators.Minus;
 import tokens.operators.Plus;
@@ -15,7 +20,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -23,37 +27,39 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 
 import java.util.ArrayList;
 import java.util.List;
 public class Main extends Application {
-    private Stage stage;
-    private Canvas canvas;
+    private static Stage stage;
+    private static Canvas canvas;
     private static GraphicsContext gc;
     private BorderPane b;
     private Scene graphicsScene;
     private Button tsRender;
-    private TextField textField;
-    private Slider drvApproxLoc;
-    private Slider tsApproxLoc;
-    private Slider lowerBound;
-    private Slider upperBound;
-    private Slider tsErrorLoc;
-    private static TextArea console;
-
+    private TextField inputField;
+    private TabPane toolTab;
+    private static Slider drvApproxLoc;
+    private static Slider tsApproxLoc;
+    private static Slider lowerBound;
+    private static Slider upperBound;
+    private static Slider tsErrorLoc;
+    private static TextFlow console;
+    private static ScrollPane consolePane;
+    private Rectangle rightEdge;
+    private Rectangle bottomEdge;
 
     //Window size tracking, b prefix indicates that it is the base value
     private static double MIN_X = 0;
     private static double MAX_X = 0;
     private static double MIN_Y = 0;
     private static double MAX_Y = 0;
-    private final static double bMIN_X = -3.14;
-    private final static double bMAX_X = 3.14;
-    private final static double bMIN_Y = -1.1;
-    private final static double bMAX_Y = 1.1;
+    private static double bMIN_X = -3.14;
+    private static double bMAX_X = 3.14;
+    private static double bMIN_Y = -1.1;
+    private static double bMAX_Y = 1.1;
 
     private final static int XRES = 200;
     private final static int YRES = 300;
@@ -74,90 +80,100 @@ public class Main extends Application {
     private boolean isMouseDragging = false;
 
     //default function creation
-    private Function mainFunction = new Function("sin(x)");
+    private static Function mainFunction = new Function("sin(x)");
 
     //settings
     private static double baseLineWeight = 2 ;
     private static int roundLevel = 3;
 
     //create visualizers
-    private SecantLine secantDrawer = new SecantLine(0, 2, mainFunction);
-    private DerivativeGraph derivativeGraphDrawer = new DerivativeGraph( 1, mainFunction);
-    private TaylorSeries taylorSeriesDrawer = new TaylorSeries(1, 0, mainFunction);
-    private RiemannSum riemannSumDrawer = new RiemannSum(-2, 2, mainFunction);
+    private static SecantLine secantDrawer = new SecantLine(0, 2, mainFunction);
+    private static DerivativeGraph derivativeGraphDrawer = new DerivativeGraph( 1, mainFunction);
+    private static TaylorSeries taylorSeriesDrawer = new TaylorSeries(1, 0, mainFunction);
+    private static RiemannSum riemannSumDrawer = new RiemannSum(-2, 2, mainFunction);
 
     public void start(Stage primaryStage) {
         //init
         stage = primaryStage;
-        stage.setTitle("Taylor Series");
+        stage.setTitle("Calculus Visualizer");
         resetWindow();
 
         //create UI nodes
         canvas = createCanvas();
-        textField = new TextField();
-        textField.setPromptText("Type your function here");
-        textField.setOnKeyReleased(new EventHandler<KeyEvent>() {
+        inputField = new TextField();
+        inputField.setPromptText("Type your function here");
+        inputField.setOnKeyReleased(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
                 if(event.getCode().toString().equals("ENTER")) {
-                    Function newFunction = new Function(textField.getText());
+                    Function newFunction = new Function(inputField.getText());
                     if(newFunction.getExpression().size() > 0) {
-                        mainFunction = newFunction;
-                        secantDrawer.setFunction(mainFunction);
-                        derivativeGraphDrawer.setFunction(mainFunction);
-                        taylorSeriesDrawer.setFunction(mainFunction);
-                        riemannSumDrawer.setFunction(mainFunction);
-                        updateRender();
+                       resetMainFunction(newFunction);
                     }
                     else {
-                        System.out.println("Got here");
-                        writeConsole("ERROR: Function.tokenify() was not able to parse entered expression. This "
-                                + "indicates the entered expression was invalid.\nPlease try again with a valid expression.");
+                        writeConsole("ERROR: main.Function.tokenify() was not able to parse entered expression. This "
+                                + "indicates the entered expression was invalid.\nPlease try again with a valid expression.\n", true);
                     }
                 }
             }
         });
 
-        //create
-        TabPane toolTab = new TabPane();
+        //create toolTab
+        toolTab = new TabPane();
         toolTab.setSide(Side.TOP);
-
         //create ts tab
         toolTab.getTabs().add(createTsTab());
-
         //create drv tab
         toolTab.getTabs().add(createDrvTab());
-
         //create integral tab
         toolTab.getTabs().add(createIntegralTab());
 
-        console = new TextArea();
-        console.setEditable(false);
-        console.setFont(Font.font("monospace"));
 
+        //create console
+        console = new TextFlow();
+        console.heightProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                System.out.println("Hi");
+                consolePane.setVvalue(consolePane.getVmax());
+                System.out.println(consolePane.getVvalue());
+
+            }
+        });
+        consolePane = new ScrollPane();
+        consolePane.setMinHeight(130);
+        consolePane.setMaxHeight(130);
+        consolePane.setContent(console);
+        consolePane.setStyle("-fx-border-color: black;");
+        consolePane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+        consolePane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
+        rightEdge = new Rectangle(28, 1, Color.INDIANRED);
+        bottomEdge = new Rectangle(1, 50, Color.INDIANRED);
 
         GridPane canvasPane = new GridPane();
         canvasPane.add(canvas, 0, 0);
-        canvasPane.add(console, 0, 1);
-        console.setText("Console: ");
-
+        canvasPane.add(consolePane, 0, 1);
         //arrange nodes
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(baseLineWeight);
         b = new BorderPane();
-        b.setCenter(canvasPane);
-        GridPane grid = new GridPane();
-        grid.add(textField, 1, 0);
-        textField.setMinWidth(1500);
-        b.setTop(grid);
+        b.setTop(inputField);
         b.setLeft(toolTab);
+        b.setCenter(canvasPane);
+        b.setRight(rightEdge);
+        b.setBottom(bottomEdge);
+        rightEdge.minWidth(50);
 
-        graphicsScene = new Scene(b, width, height + 100);
+        graphicsScene = new Scene(b);
+        graphicsScene.getStylesheets().add("main/Stylesheet.css");
         //start
         stage.setScene(graphicsScene);
+        stage.setMinHeight(600);
+        stage.setMinWidth(600);
+        attachChangeListeners();
         stage.show();
         updateRender();
-
     }
 
     /**
@@ -186,7 +202,6 @@ public class Main extends Application {
             public void handle(ActionEvent event) {
                 taylorSeriesDrawer.setMaclaurin(isMaclaurinCheckBox.isSelected());
                 updateRender();
-                System.out.println(taylorSeriesDrawer.isMaclaurin());
             }
         });
         tsGridPane.add(isMaclaurinCheckBox, 0, 1);
@@ -322,7 +337,6 @@ public class Main extends Application {
         return drvTab;
     }
 
-
     private Tab createIntegralTab() {
         Tab integralTab = new Tab("Integral");
         GridPane integralGridPane = new GridPane();
@@ -333,7 +347,7 @@ public class Main extends Application {
             @Override
             public void handle(ActionEvent event) {
                 riemannSumDrawer.setShowing(riemannCheckBox.isSelected());
-                writeConsole("You have entered the Riemann sum visualization");
+                writeConsole("You have entered the Riemann sum visualization", false);
                 updateRender();
             }
         });
@@ -412,7 +426,13 @@ public class Main extends Application {
      */
     private Canvas createCanvas() {
 
-        Canvas newCanvas = new Canvas(width, height);
+        Canvas newCanvas = new Canvas(width, height) {
+            public boolean isResizable() {
+                return true;
+            }
+        };
+        newCanvas.widthProperty();
+
         newCanvas.addEventHandler(MouseEvent.MOUSE_MOVED, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -453,7 +473,6 @@ public class Main extends Application {
                 deltaYCoord = 0;
             }
         });
-
         newCanvas.addEventHandler(ScrollEvent.SCROLL, new EventHandler<ScrollEvent>() {
             @Override
             public void handle(ScrollEvent event) {
@@ -491,10 +510,33 @@ public class Main extends Application {
     public static void renderFunction(Function functionToRender, Color renderColor) {
         gc.beginPath();
         gc.setLineWidth(baseLineWeight);
-        for(double d = MIN_X; d < MAX_X; d += (5 / (double) XRES * zoomTransform)){
+        boolean isNaN = true;
+        boolean willBeNaN = false;
+        double delta = 1 / (double) XRES * zoomTransform;
+        if(renderColor.equals(Color.INDIANRED)) {
+            delta*=10;
+        }
+        for(double d = MIN_X; d < MAX_X; d += delta ){
             double yValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[1];
             double xValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[0];
+            isNaN = new Double(yValue).isNaN();
+            if(isNaN)
+                yValue = 0;
             gc.lineTo(xValue, yValue);
+            willBeNaN = new Double(functionToRender.computeFunc(d + delta)).isNaN();
+            //if the values produced by the function change from being NaN to not NaN
+            if(isNaN != willBeNaN) {
+                if(isNaN = true) {
+                    gc.setStroke(Color.TRANSPARENT);
+                    gc.stroke();
+                    gc.beginPath();
+                }
+                else {
+                    gc.setStroke(renderColor);
+                    gc.stroke();
+                    gc.beginPath();
+                }
+            }
         }
         gc.setStroke(renderColor);
         gc.stroke();
@@ -503,7 +545,7 @@ public class Main extends Application {
     /**
      * A method to render the graphs axis
      */
-    private void renderAxis() {
+    private static void renderAxis() {
         //Draw X axis
         drawLineSegment(getMin_X(), 0, getMax_X(), 0, Color.BLACK, -1 * baseLineWeight / 3);
         //Draw Y axis
@@ -514,7 +556,7 @@ public class Main extends Application {
      * Called every time something in the program occurs which changes the image on the canvas, this method first
      * clears the canvas and then re-renders the necessary features and resets variables.
      */
-    private void updateRender() {
+    private static void updateRender() {
         gc.clearRect(0, 0, 10000, 10000);
         riemannSumDrawer.draw();
         renderAxis();
@@ -532,15 +574,36 @@ public class Main extends Application {
         secantDrawer.draw();
         derivativeGraphDrawer.draw();
         taylorSeriesDrawer.draw();
-    }
-
-
-    public static void writeConsole(String text) {
-        console.setText(console.getText() + "\n" + text);
+        System.out.println(consolePane.getVvalue());
     }
 
     /**
-     * A function which draws a line between two points
+     *A method to write text to write text to rhe program console. Either as red error text or black message text.
+     * @param text the text to be written to the console
+     * @param isError true means the text will be rendered as red error text, false means the text will be rendered as
+     *                black message text.
+     */
+    public static void writeConsole(String text, boolean isError) {
+        if(isError){
+            Text newErrorText = new Text(text);
+            newErrorText.setFill(Color.RED);
+            newErrorText.setFont(Font.font("Monospaced", FontPosture.REGULAR, 11.0));
+            console.getChildren().add(newErrorText);
+        }
+        else {
+            Text newText = new Text(text);
+            newText.setFill(Color.BLACK);
+            newText.setFont(Font.font("Monospaced", FontPosture.REGULAR, 11.0));
+            console.getChildren().add(newText);
+        }
+        Text blankText = new Text(" \n");
+        blankText.setFill(Color.BLACK);
+        blankText.setFont(Font.font("Monospaced", FontPosture.REGULAR, 11.0));
+        console.getChildren().add(blankText);
+    }
+
+    /**
+     * A function which draws a line between two points.
      * @param xOne x coordinate of point one
      * @param yOne y coordinate of point one
      * @param xTwo x coordinate of point two
@@ -561,6 +624,13 @@ public class Main extends Application {
         renderFunction(new Function(linearEquation), Color.MEDIUMSEAGREEN);
     }
 
+    /**
+     * A function which draws a line segment between two points.
+     * @param xOne x coordinate of point one
+     * @param yOne y coordinate of point one
+     * @param xTwo x coordinate of point two
+     * @param yTwo y coordinate of point two
+     */
     public static void drawLineSegment(double xOne, double yOne, double xTwo, double yTwo, Color color, double deltaW) {
         gc.setLineWidth(baseLineWeight + deltaW);
         gc.beginPath();
@@ -568,6 +638,68 @@ public class Main extends Application {
         gc.lineTo(Graph.getPixelSpace(xTwo, 0)[0], Graph.getPixelSpace(0, yTwo)[1]);
         gc.setStroke(color);
         gc.stroke();
+    }
+
+    /**
+     * To ensure a well functioning and attractive application at all window sizes, it is necessary for the UI elements
+     * to be resized as the window is. This method is called by listeners on the stage objects width and height properties
+     * and handles all such changes.
+     */
+    private void updateUISize() {
+        //update canvas size
+        double width = stage.getWidth();
+
+        double height = stage.getHeight();
+
+        double toolTabWidth = toolTab.getWidth();
+        double rightEdgeWidth = rightEdge.getWidth();
+        double bottomEdgeHeight = bottomEdge.getHeight();
+
+        double middleWidth = width - toolTabWidth - rightEdgeWidth;
+
+        double consoleHeight = consolePane.getHeight();
+        double inputBarHeight = inputField.getHeight();
+        double canvasHeight = height - consoleHeight - inputBarHeight - bottomEdgeHeight;
+        toolTab.setMinHeight(height - inputBarHeight - bottomEdgeHeight);
+        toolTab.setMaxHeight(height - inputBarHeight - bottomEdgeHeight);
+        rightEdge.setHeight(height - bottomEdgeHeight - inputBarHeight  );
+        consolePane.setPrefWidth(middleWidth);
+        console.setPrefWidth(middleWidth);
+        inputField.setPrefWidth(width);
+        bottomEdge.setWidth(width);
+        canvas.setWidth(middleWidth);
+        canvas.setHeight(canvasHeight);
+
+        //Update graph for new window size
+        double newViewLength = canvas.getWidth() / XRES;
+        double viewLengthDelta = Math.abs(bMAX_X - bMIN_X) - newViewLength;
+        bMAX_X = bMAX_X - viewLengthDelta;
+        double xDiff = Math.abs((bMIN_X - xOffset) - (bMAX_X  - xOffset));
+        double newXDiff = zoomTransform * xDiff;
+        double movNeccesaryToAcheiveX = (newXDiff - xDiff) / 2;
+        MIN_X = (bMIN_X - deltaXCoord - xOffset) - movNeccesaryToAcheiveX;
+        MAX_X = (bMAX_X  - deltaXCoord - xOffset) + movNeccesaryToAcheiveX;
+        double yDiff = Math.abs((bMIN_Y - yOffset) - (bMAX_Y  - yOffset));
+        double newYDiff = zoomTransform * yDiff;
+        double movNeccesaryToAcheiveY = (newYDiff - yDiff) / 2;
+        MIN_Y = (bMIN_Y  + yOffset + deltaYCoord) - movNeccesaryToAcheiveY;
+        MAX_Y = (bMAX_Y  + yOffset + deltaYCoord) + movNeccesaryToAcheiveY;
+        updateRender();
+    }
+
+    private void attachChangeListeners() {
+        stage.widthProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                updateUISize();
+            }
+        });
+        stage.heightProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                updateUISize();
+            }
+        });
     }
 
     /**
@@ -598,6 +730,15 @@ public class Main extends Application {
             outputString+=leastShown;
         }
         return outputString;
+    }
+
+    public static void resetMainFunction(Function newFunction) {
+        mainFunction = newFunction;
+        secantDrawer.setFunction(mainFunction);
+        derivativeGraphDrawer.setFunction(mainFunction);
+        taylorSeriesDrawer.setFunction(mainFunction);
+        riemannSumDrawer.setFunction(mainFunction);
+        updateRender();
     }
 
     public static double getZoomTransform() {
@@ -632,12 +773,12 @@ public class Main extends Application {
         return MAX_X;
     }
 
-    public static int getWidth() {
-        return width;
+    public static double getWidth() {
+        return canvas.getWidth();
     }
 
-    public static int getHeight() {
-        return height;
+    public static double getHeight() {
+        return canvas.getHeight();
     }
 
     public static void main(String[] args)  {

@@ -1,4 +1,4 @@
-package Tokens.Operators;
+package tokens.operators;
 
 public class Plus extends Operator {
 

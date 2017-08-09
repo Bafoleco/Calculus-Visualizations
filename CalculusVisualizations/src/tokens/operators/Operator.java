@@ -1,6 +1,6 @@
-package Tokens.Operators;
+package tokens.operators;
 
-import Tokens.Token;
+import tokens.Token;
 
 public abstract class Operator extends Token {
     int precedence;

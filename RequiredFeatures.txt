@@ -1,0 +1,40 @@
+Settings menu, color, line wts 
+
+Fix function entry:
+
+//*Mathmatical constants pi, e
+//*additional functions, sqrt()*, cos(), tan()
+*errors handled:
+//*unidentifiable character causes lockup
+ // * invalid function allowed to run
+//Fix sizing of window and strange right size
+
+//Fix console
+
+Fix connection of asymptotes:
+
+  idea eliminate crosses by checking slope
+
+Fix bug where functions with undefined areas cause areas to fill
+
+convert long list of else ifs to case switch if neccesary
+
+critical point support
+
+
+Fixed Console
+Added autoresizing 
+
+checklogs
+
+
+3:25
+752
+
+
+844
+858
+
+
+10:16
+12:18

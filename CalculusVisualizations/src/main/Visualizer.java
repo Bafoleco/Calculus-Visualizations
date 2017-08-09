@@ -1,3 +1,5 @@
+package main;
+
 public abstract class Visualizer {
     protected Function function;
 

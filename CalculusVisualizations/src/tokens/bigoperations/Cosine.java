@@ -1,7 +1,16 @@
-package Tokens.BigOperations;
+package tokens.bigoperations;
 
-/**
- * Created by bayfo on 7/08/2017.
- */
-public class Cos {
+import java.util.List;
+
+public class Cosine extends BigOperation {
+
+    public Cosine(){
+        super(3, 1);
+    }
+
+    @Override
+    public double stackAction(List<Double> inputList) {
+        return Math.cos(inputList.get(0));
+    }
+
 }

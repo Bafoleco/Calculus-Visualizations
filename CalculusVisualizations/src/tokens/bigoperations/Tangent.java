@@ -1,7 +1,15 @@
-package Tokens.BigOperations;
+package tokens.bigoperations;
 
-/**
- * Created by bayfo on 7/08/2017.
- */
-public class Tangent {
+import java.util.List;
+
+public class Tangent extends BigOperation {
+    public Tangent(){
+        super(4, 1);
+    }
+
+    @Override
+    public double stackAction(List<Double> inputList) {
+        return Math.tan(inputList.get(0));
+    }
+
 }

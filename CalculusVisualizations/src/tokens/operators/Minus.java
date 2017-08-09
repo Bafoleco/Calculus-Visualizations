@@ -1,4 +1,4 @@
-package Tokens.Operators;
+package tokens.operators;
 
 /**
  * Created by janicefoley on 6/29/17.

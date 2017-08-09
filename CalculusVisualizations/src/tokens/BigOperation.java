@@ -1,6 +1,4 @@
-package Tokens;
-
-import Tokens.Token;
+package tokens;
 
 import java.util.List;
 

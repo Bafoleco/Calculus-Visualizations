@@ -1,6 +1,4 @@
-package Tokens.BigOperations;
-
-import Tokens.BigOperations.BigOperation;
+package tokens.bigoperations;
 
 import java.util.List;
 

@@ -1,3 +1,5 @@
+package main;
+
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -108,7 +110,7 @@ public class RiemannSum extends Visualizer{
         else if(mode == 5) {
             return function.computeFunc(xPos + .5 * stepSize);
         } else {
-            Main.writeConsole("ERROR: Mode of Riemann summation not found");
+            Main.writeConsole("ERROR: Mode of Riemann summation not found", true);
             return 0;
         }
     }

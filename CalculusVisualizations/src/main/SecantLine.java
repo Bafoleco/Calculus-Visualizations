@@ -1,3 +1,5 @@
+package main;
+
 import javafx.scene.paint.Color;
 
 public class SecantLine extends Visualizer{

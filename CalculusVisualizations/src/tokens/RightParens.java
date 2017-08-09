@@ -1,4 +1,4 @@
-package Tokens;
+package tokens;
 
 /**
  * Created by bayfo on 5/15/2017.

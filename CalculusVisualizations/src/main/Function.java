@@ -1,3 +1,5 @@
+package main;
+
 import tokens.*;
 import tokens.operators.*;
 import tokens.bigoperations.*;

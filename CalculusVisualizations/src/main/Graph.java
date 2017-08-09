@@ -1,3 +1,5 @@
+package main;
+
 /**
  * A class of static methods designed to handle the necessary conversions between the worlds of pixels and \
  * the worlds of coordinates
@@ -14,12 +16,11 @@ public class Graph {
      */
     public static double[] getPixelSpace(double x, double y) {
         double[] pixelSpace = new double[2];
+
         double maxX = Main.getMax_X();
         double maxY = Main.getMAX_Y();
         double minX = Main.getMin_X();
         double minY = Main.getMIN_Y();
-        int xRes = Main.getXRES();
-        int yRes = Main.getYRES();
         //get relative positions between max and min
         double relativeX = (x - minX) / Math.abs(maxX - minX);
         double relativeY = (y - minY) / Math.abs(maxY - minY);

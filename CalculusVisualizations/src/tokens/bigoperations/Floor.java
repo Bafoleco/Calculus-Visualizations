@@ -1,7 +1,14 @@
-package Tokens.BigOperations;
+package tokens.bigoperations;
 
-/**
- * Created by bayfo on 7/08/2017.
- */
-public class Floor {
+import java.util.List;
+
+public class Floor extends BigOperation {
+    public Floor(){
+        super(5, 1);
+    }
+
+    @Override
+    public double stackAction(List<Double> inputList) {
+        return Math.floor(inputList.get(0));
+    }
 }
