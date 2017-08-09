@@ -1,5 +1,5 @@
-import Tokens.*;
-import Tokens.Operators.*;
+import tokens.*;
+import tokens.operators.*;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;

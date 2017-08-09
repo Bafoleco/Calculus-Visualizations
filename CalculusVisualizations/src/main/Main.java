@@ -1,7 +1,7 @@
-import Tokens.*;
-import Tokens.Operators.Minus;
-import Tokens.Operators.Plus;
-import Tokens.Operators.Times;
+import tokens.*;
+import tokens.operators.Minus;
+import tokens.operators.Plus;
+import tokens.operators.Times;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -23,12 +23,10 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.*;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 public class Main extends Application {
@@ -102,12 +100,20 @@ public class Main extends Application {
             @Override
             public void handle(KeyEvent event) {
                 if(event.getCode().toString().equals("ENTER")) {
-                    mainFunction = new Function(textField.getText());
-                    secantDrawer.setFunction(mainFunction);
-                    derivativeGraphDrawer.setFunction(mainFunction);
-                    taylorSeriesDrawer.setFunction(mainFunction);
-                    riemannSumDrawer.setFunction(mainFunction);
-                    updateRender();
+                    Function newFunction = new Function(textField.getText());
+                    if(newFunction.getExpression().size() > 0) {
+                        mainFunction = newFunction;
+                        secantDrawer.setFunction(mainFunction);
+                        derivativeGraphDrawer.setFunction(mainFunction);
+                        taylorSeriesDrawer.setFunction(mainFunction);
+                        riemannSumDrawer.setFunction(mainFunction);
+                        updateRender();
+                    }
+                    else {
+                        System.out.println("Got here");
+                        writeConsole("ERROR: Function.tokenify() was not able to parse entered expression. This "
+                                + "indicates the entered expression was invalid.\nPlease try again with a valid expression.");
+                    }
                 }
             }
         });

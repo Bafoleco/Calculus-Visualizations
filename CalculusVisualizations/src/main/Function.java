@@ -1,6 +1,6 @@
-import Tokens.*;
-import Tokens.Operators.*;
-import Tokens.BigOperations.*;
+import tokens.*;
+import tokens.operators.*;
+import tokens.bigoperations.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +13,6 @@ import java.util.List;
 public class Function {
 
     private final double deltaX = 0.001;
-
     private List<Token> expression;
 
     /**
@@ -38,8 +37,6 @@ public class Function {
      * @return the original expression, still in infix notation, represented as a ser
      */
     private static List<Token> tokenify(String expression) {
-
-
         //creates an ArrayList of tokens to be filled and eventually returned of tokens
         List<Token> tokenList = new ArrayList<>();
 
@@ -48,10 +45,9 @@ public class Function {
         for(int i = 0; i < expression.length(); i++) {
             expChars.add(expression.charAt(i));
         }
-
         int index = 0;
-
-        while(index < expChars.size()) {
+        boolean didNothing = false;
+        while(index < expChars.size() && !didNothing) {
             //if the char is a digit, the token will be a constant, get all adjacent nums and create a constant token
             if(Character.isDigit(expChars.get(index))) {
                 List<Character> digits = new ArrayList<>();
@@ -104,11 +100,60 @@ public class Function {
                 tokenList.add(new Exponentiate());
                 index++;
             }
-
             //if sin, add sin token
             else if(expression.substring(index).indexOf("sin") == 0) {
                 tokenList.add(new Sine());
                 index += 3;
+            }
+            else if(expression.substring(index).indexOf("cos") == 0){
+                tokenList.add(new Cosine());
+                index += 3;
+            }
+            else if(expression.substring(index).indexOf("tan") == 0) {
+                tokenList.add(new Tangent());
+                index += 3;
+            }
+            else if(expression.substring(index).indexOf("sqrt") == 0) {
+                tokenList.add(new Sqrt());
+                index += 4;
+            }
+            else if(expression.substring(index).indexOf("ln") == 0 || expression.substring(index).indexOf("LN") == 0) {
+                tokenList.add(new NaturalLog());
+                index += 2;
+            }
+            else if(expression.substring(index).indexOf("log") == 0 || expression.substring(index).indexOf("Log") == 0 ||
+                    expression.substring(index).indexOf("LOG") == 0) {
+                tokenList.add(new LogBase10());
+                index += 3;
+            }
+            else if(expression.substring(index).indexOf("abs") == 0 || expression.substring(index).indexOf("Abs") == 0) {
+                tokenList.add(new AbsoluteValue());
+                index += 3;
+            }
+            //TODO fix infinite loop of bars aren't closed
+            else if(expChars.get(index).equals('|')) {
+                tokenList.add(new AbsoluteValue());
+                tokenList.add(new LeftParens());
+                int searchIndex = index + 1;
+                while (!expChars.get(searchIndex).equals('|')) {
+                    searchIndex++;
+                    System.out.println(searchIndex);
+                }
+                expChars.set(searchIndex, ')');
+                index++;
+            }
+
+            else if(expression.substring(index).indexOf("floor") == 0 || expression.substring(index).indexOf("Floor") == 0) {
+                tokenList.add(new Floor());
+                index += 5;
+            }
+            else if(expression.substring(index).indexOf("Ceiling") == 0 || expression.substring(index).indexOf("ceiling") == 0) {
+                tokenList.add(new Ceiling());
+                index += 7;
+            }
+            else if(expression.substring(index).indexOf("Ceil") == 0 || expression.substring(index).indexOf("ceil") == 0) {
+                tokenList.add(new Ceiling());
+                index += 4;
             }
             //if left parenthesis, add that token
             else if(expChars.get(index).equals('(')) {
@@ -125,7 +170,25 @@ public class Function {
                 tokenList.add(new Seperator());
                 index++;
             }
+            //math constants
+            else if(expChars.get(index).equals('e')){
+                tokenList.add(new Constant(Math.E));
+                index++;
+            }
+            else if(expression.substring(index).indexOf("pi") == 0 || expression.substring(index).indexOf("Pi") == 0 ||
+                    expression.substring(index).indexOf("PI") == 0){
+                tokenList.add(new Constant(Math.PI));
+                index+=2;
+            }
+            //if a character got here, it means the function was invalid
+            else {
+                didNothing = true;
+            }
         }
+        if(didNothing && index < expChars.size()) {
+            tokenList.clear();
+        }
+
         //post processing
         for(int i = 0; i < tokenList.size(); i++) {
             if(tokenList.get(i).getClass().getSimpleName().equals("Minus") && (i == 0 ||
@@ -207,5 +270,9 @@ public class Function {
         else {
             return -1;
         }
+    }
+
+    public List<Token> getExpression() {
+        return expression;
     }
 }
