@@ -290,3 +290,13 @@ Switched console to use a text flow pane enabling greater control of style. This
 Implemented responsive design to allow all UI elements to scale correctly. 
 ### Learning Done
 
+## August 10th, 2017
+
+### Work Times
+In: 10:30PM
+Out: 11:50PM
+### Total Time Worked
+1:20
+### Work Done
+Made UI elements dynamicaly change color to match tab background.  
+Created a settings menu.  
