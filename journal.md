@@ -258,11 +258,11 @@ css and multiple pages.
 
 ### Work Times
 
-In: 1:40PM
-Out: 5:12 PM
+In: 1:40PM  
+Out: 5:12 PM  
 
 ### Total Time Worked
-
+3:32  
 ### Work Done
 Fixed the (formerly) flawed system of expression input:
 Added support for mathamtical constants pi & e  
@@ -273,3 +273,42 @@ Fixed (for now) issue where functions with limited domains rendered with solid b
 
 ### Learning Done
 
+## August 8th, 2017
+
+### Work Times
+In: 3:25PM  
+Out: 7:52PM  
+In: 8:44PM  
+Out: 8:58PM      
+In: 10:16PM  
+Out: 12:18AM (next day)  
+### Total Time Worked
+6:43
+
+### Work Done
+Switched console to use a text flow pane enabling greater control of style. This allowed me to implement red colored error messages.  
+Implemented responsive design to allow all UI elements to scale correctly. 
+### Learning Done
+
+## August 10th, 2017
+
+### Work Times
+In: 10:30PM
+Out: 11:50PM
+### Total Time Worked
+1:20
+### Work Done
+Made UI elements dynamicaly change color to match tab background.  
+Created a settings menu.  
+
+## August 11th, 2017
+
+### Work Times
+In: 12:20PM
+Out: 2:49PM
+### Total Time Worked
+1:20
+### Work Done
+Added ability for user to customize UI colors  
+Added ability for * to be inferred from token list 
+Made use of safeRender function dependent to improve performance  
