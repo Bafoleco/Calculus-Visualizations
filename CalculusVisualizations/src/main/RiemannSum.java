@@ -10,7 +10,7 @@ public class RiemannSum extends Visualizer{
     double upperBound;
     int numSteps = 1;
     String areaUnderCurve;
-
+    private Color mainColor = Color.BLUEVIOLET;
     /**
      * Mode 1 = left
      * Mode 2 = right
@@ -52,8 +52,8 @@ public class RiemannSum extends Visualizer{
 
                 gc.fillRect(leftCornerX, leftCornerY, width, Math.abs(pixHeight));
             }
-            new Point(lowerBound, function.computeFunc(lowerBound), Color.BLUEVIOLET).drawPoint();
-            new Point(upperBound, function.computeFunc(upperBound), Color.BLUEVIOLET).drawPoint();
+            new Point(lowerBound, function.computeFunc(lowerBound), mainColor).drawPoint();
+            new Point(upperBound, function.computeFunc(upperBound), mainColor).drawPoint();
             //Draw lines under points
             //TODO rewrite using the drawlineSegment method
             double baseLineWidth = gc.getLineWidth();
@@ -62,12 +62,12 @@ public class RiemannSum extends Visualizer{
             gc.lineTo(Graph.getPixelSpace(lowerBound, 0)[0], Graph.getPixelSpace(0, 0)[1]);
             gc.lineTo(Graph.getPixelSpace(lowerBound, 0)[0], Graph.getPixelSpace(0,
                     function.computeFunc(lowerBound))[1] - Point.getOuterSize() / 2);
-            gc.setStroke(Color.BLUEVIOLET);
+            gc.setStroke(mainColor);
             gc.stroke();
             gc.beginPath();
             gc.lineTo(Graph.getPixelSpace(upperBound, 0)[0], Graph.getPixelSpace(0, 0)[1]);
             gc.lineTo(Graph.getPixelSpace(upperBound, 0)[0], Graph.getPixelSpace(0, function.computeFunc(upperBound))[1]);
-            gc.setStroke(Color.BLUEVIOLET);
+            gc.setStroke(mainColor);
             gc.stroke();
             gc.setLineWidth(baseLineWidth);
             areaUnderCurve = Main.round(area);
@@ -129,5 +129,9 @@ public class RiemannSum extends Visualizer{
 
     public void setMode(int mode) {
         this.mode = mode;
+    }
+
+    public void setMainColor(Color mainColor) {
+        this.mainColor = mainColor;
     }
 }

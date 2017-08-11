@@ -17,6 +17,7 @@ public class TaylorSeries extends Visualizer {
     private boolean errorVisOn = false;
     private double tsErrorLoc;
     private String error;
+    private Color mainColor = Color.INDIANRED;
 
     public TaylorSeries(int order, double xPos, Function function) {
         this.order = order;
@@ -27,15 +28,15 @@ public class TaylorSeries extends Visualizer {
 
     public void draw() {
         if (showing) {
-            Main.renderFunction(taylorPolynomials.get(order - 1), Color.INDIANRED);
-            new Point(xPos, function.computeFunc(xPos), Color.INDIANRED).drawPoint();
+            Main.renderFunction(taylorPolynomials.get(order - 1), mainColor, false);
+            new Point(xPos, function.computeFunc(xPos), mainColor).drawPoint();
             if (errorVisOn) {
                 calculateError();
                 double realValue = function.computeFunc(tsErrorLoc);
                 double errorValue = taylorPolynomials.get(order - 1).computeFunc(tsErrorLoc);
-                new Point(tsErrorLoc, errorValue, Color.INDIANRED.darker()).drawPoint();
-                new Point(tsErrorLoc, realValue, Color.INDIANRED.darker()).drawPoint();
-                Main.drawLineSegment(tsErrorLoc, errorValue, tsErrorLoc, realValue, Color.INDIANRED.darker(), 0.0);
+                new Point(tsErrorLoc, errorValue, mainColor.darker()).drawPoint();
+                new Point(tsErrorLoc, realValue, mainColor.darker()).drawPoint();
+                Main.drawLineSegment(tsErrorLoc, errorValue, tsErrorLoc, realValue, mainColor.darker(), 0.0);
                 GraphicsContext gc = Main.getGc();
                 gc.setFill(Color.BLACK);
                 gc.setFont(Font.font(15));
@@ -48,7 +49,7 @@ public class TaylorSeries extends Visualizer {
 
     /**
      *To avoid the computationally intensive task of calculating the Taylor Series having to be done on every frame rendered,
-     * This function pregenertes the Taylor Polynomials required whenever a new function is entered
+     * This function pre generates the Taylor Polynomials required whenever a new function is entered
      */
     public void createTaylorPolynomials() {
         List<Function> newTaylorPolynomials = new ArrayList<>();
@@ -112,6 +113,10 @@ public class TaylorSeries extends Visualizer {
 
     public void setTsErrorLoc(double tsErrorLoc) {
         this.tsErrorLoc = tsErrorLoc;
+    }
+
+    public void setMainColor(Color mainColor) {
+        this.mainColor = mainColor;
     }
 }
 

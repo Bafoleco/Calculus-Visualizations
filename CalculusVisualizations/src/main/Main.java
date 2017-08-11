@@ -32,6 +32,7 @@ import javafx.scene.Scene;
 
 import java.util.ArrayList;
 import java.util.List;
+
 public class Main extends Application {
     private static Stage stage;
     private static Canvas canvas;
@@ -50,7 +51,7 @@ public class Main extends Application {
     private static ScrollPane consolePane;
     private Rectangle rightEdge;
     private Rectangle bottomEdge;
-
+    private Color[] tabColors = {Color.INDIANRED, Color.MEDIUMSEAGREEN, Color.BLUEVIOLET, Color.GREY};
     //Window size tracking, b prefix indicates that it is the base value
     private static double MIN_X = 0;
     private static double MAX_X = 0;
@@ -64,8 +65,8 @@ public class Main extends Application {
     private final static int XRES = 200;
     private final static int YRES = 300;
 
-    private final static int width = (int) ( Math.abs(bMAX_X - bMIN_X) * XRES );
-    private final static int height = (int)( Math.abs(bMAX_Y - bMIN_Y) * YRES );
+    private final static int width = (int) (Math.abs(bMAX_X - bMIN_X) * XRES);
+    private final static int height = (int) (Math.abs(bMAX_Y - bMIN_Y) * YRES);
 
     private double deltaXCoord = 0;
     private double deltaYCoord = 0;
@@ -83,12 +84,12 @@ public class Main extends Application {
     private static Function mainFunction = new Function("sin(x)");
 
     //settings
-    private static double baseLineWeight = 2 ;
+    private static double baseLineWeight = 2;
     private static int roundLevel = 3;
 
     //create visualizers
     private static SecantLine secantDrawer = new SecantLine(0, 2, mainFunction);
-    private static DerivativeGraph derivativeGraphDrawer = new DerivativeGraph( 1, mainFunction);
+    private static DerivativeGraph derivativeGraphDrawer = new DerivativeGraph(1, mainFunction);
     private static TaylorSeries taylorSeriesDrawer = new TaylorSeries(1, 0, mainFunction);
     private static RiemannSum riemannSumDrawer = new RiemannSum(-2, 2, mainFunction);
 
@@ -105,12 +106,11 @@ public class Main extends Application {
         inputField.setOnKeyReleased(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
-                if(event.getCode().toString().equals("ENTER")) {
+                if (event.getCode().toString().equals("ENTER")) {
                     Function newFunction = new Function(inputField.getText());
-                    if(newFunction.getExpression().size() > 0) {
-                       resetMainFunction(newFunction);
-                    }
-                    else {
+                    if (newFunction.getExpression().size() > 0) {
+                        resetMainFunction(newFunction);
+                    } else {
                         writeConsole("ERROR: main.Function.tokenify() was not able to parse entered expression. This "
                                 + "indicates the entered expression was invalid.\nPlease try again with a valid expression.\n", true);
                     }
@@ -120,6 +120,17 @@ public class Main extends Application {
 
         //create toolTab
         toolTab = new TabPane();
+        toolTab.addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                for (int i = 0; i < toolTab.getTabs().size(); i++) {
+                    if (toolTab.getSelectionModel().isSelected(i)) {
+                        updateUIColor(tabColors[i]);
+                    }
+                }
+            }
+        });
+
         toolTab.setSide(Side.TOP);
         //create ts tab
         toolTab.getTabs().add(createTsTab());
@@ -128,15 +139,14 @@ public class Main extends Application {
         //create integral tab
         toolTab.getTabs().add(createIntegralTab());
 
+        toolTab.getTabs().add(createSettingsTab());
 
         //create console
         console = new TextFlow();
         console.heightProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                System.out.println("Hi");
                 consolePane.setVvalue(consolePane.getVmax());
-                System.out.println(consolePane.getVvalue());
 
             }
         });
@@ -178,10 +188,15 @@ public class Main extends Application {
 
     /**
      * A helper method which creates a tab with all the controls for visualization of the Taylor and Maclaurin series
+     *
      * @return a Tab full of various controls with a light red background
      */
     private Tab createTsTab() {
-        Tab taylorSeriesTab = new Tab("Taylor Series");
+        Tab taylorSeriesTab = new Tab("Taylor Series") {
+            public Color getColor() {
+                return Color.INDIANRED;
+            }
+        };
         GridPane tsGridPane = new GridPane();
         tsGridPane.setVgap(20);
 
@@ -225,7 +240,7 @@ public class Main extends Application {
         tsApproxLoc.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                if(!taylorSeriesDrawer.isMaclaurin()) {
+                if (!taylorSeriesDrawer.isMaclaurin()) {
                     taylorSeriesDrawer.setxPos(tsApproxLoc.getValue());
                     taylorSeriesDrawer.createTaylorPolynomials();
                 } else {
@@ -265,6 +280,7 @@ public class Main extends Application {
 
     /**
      * A helper method which creates a tab with all controls for the derivative visualizations
+     *
      * @return a Tab full of various controls, with a light green background.
      */
     private Tab createDrvTab() {
@@ -316,7 +332,7 @@ public class Main extends Application {
             }
         });
 
-        drvGridPane.add(secantCheckBox, 0 , 2);
+        drvGridPane.add(secantCheckBox, 0, 2);
         drvGridPane.add(drvApproxLoc, 0, 4);
         drvGridPane.add(new Label("Value of h"), 0, 5);
 
@@ -340,6 +356,8 @@ public class Main extends Application {
     private Tab createIntegralTab() {
         Tab integralTab = new Tab("Integral");
         GridPane integralGridPane = new GridPane();
+        //TODO 12:20 start
+
         integralGridPane.setVgap(20);
 
         CheckBox riemannCheckBox = new CheckBox("Render the Riemann Sum");
@@ -390,7 +408,7 @@ public class Main extends Application {
         //create UI to allow for choice of summation mode
         GridPane riemannOrderPane = new GridPane();
         ComboBox<String> orderChooser = new ComboBox(FXCollections.observableArrayList("1: Left Side",
-                "2: Right Side", "3: Minimum", "4: Maximum", "5: Middle" ));
+                "2: Right Side", "3: Minimum", "4: Maximum", "5: Middle"));
         orderChooser.setValue("1: Left Side");
         orderChooser.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -409,6 +427,110 @@ public class Main extends Application {
         integralGridPane.setPadding(new Insets(20, 10, 10, 10));
         integralTab.setContent(integralGridPane);
         return integralTab;
+    }
+
+    private Tab createSettingsTab() {
+        Tab settingsTab = new Tab("Settings");
+        GridPane settingsGridPane = new GridPane();
+        settingsGridPane.setVgap(20);
+
+        Label setLineWt = new Label("Enter desired line wt.");
+        TextField inputField = new TextField();
+        inputField.setOnKeyReleased(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if (event.getCode().toString().equals("ENTER")) {
+                    double inputValue = Double.parseDouble(inputField.getText());
+                    if (inputValue >= 0.5 && inputValue <= 8) {
+                        System.out.println("Hi");
+                        baseLineWeight = Double.parseDouble(inputField.getText());
+                    }
+                    //11:50
+                    else
+                        writeConsole("ERROR: entered wt. not within accepted range 0.5-8\n", true);
+                    updateRender();
+                }
+            }
+        });
+        GridPane wtPane = new GridPane();
+        wtPane.add(inputField, 0, 0);
+        wtPane.add(setLineWt, 1, 0);
+        wtPane.setHgap(10);
+        settingsGridPane.add(wtPane, 0, 0);
+
+        Label setTSColor = new Label("Set color of the Taylor Series");
+        ColorPicker tsColorPicker = new ColorPicker();
+        tsColorPicker.setValue(Color.INDIANRED);
+        tsColorPicker.valueProperty().addListener(new ChangeListener<Color>() {
+            @Override
+            public void changed(ObservableValue<? extends Color> observable, Color oldValue, Color newValue) {
+                tabColors[0] = newValue;
+                updateTabColors();
+                taylorSeriesDrawer.setMainColor(newValue);
+            }
+        });
+        GridPane tsColorPane = new GridPane();
+        tsColorPane.add(tsColorPicker, 0, 0);
+        tsColorPane.add(setTSColor, 1, 0);
+        tsColorPane.setHgap(10);
+        settingsGridPane.add(tsColorPane, 0, 1);
+
+        Label setDrvColor = new Label("Set color of the Derivative visualiser");
+        ColorPicker drvColorPicker = new ColorPicker();
+        drvColorPicker.setValue(Color.MEDIUMSEAGREEN);
+        drvColorPicker.valueProperty().addListener(new ChangeListener<Color>() {
+            @Override
+            public void changed(ObservableValue<? extends Color> observable, Color oldValue, Color newValue) {
+                tabColors[1] = newValue;
+                updateTabColors();
+                derivativeGraphDrawer.setMainColor(newValue);
+                secantDrawer.setMainColor(newValue);
+            }
+        });
+        GridPane drvColorPane = new GridPane();
+        drvColorPane.add(drvColorPicker, 0, 0);
+        drvColorPane.add(setDrvColor, 1, 0);
+        drvColorPane.setHgap(10);
+        settingsGridPane.add(drvColorPane, 0, 2);
+
+        Label setIntColor = new Label("Set color of the Riemann Sum visualiser");
+        ColorPicker intColorPicker = new ColorPicker();
+        intColorPicker.setValue(Color.BLUEVIOLET);
+        intColorPicker.valueProperty().addListener(new ChangeListener<Color>() {
+            @Override
+            public void changed(ObservableValue<? extends Color> observable, Color oldValue, Color newValue) {
+                tabColors[2] = newValue;
+                updateTabColors();
+                riemannSumDrawer.setMainColor(newValue);
+            }
+        });
+        GridPane intColorPane = new GridPane();
+        intColorPane.add(intColorPicker, 0, 0);
+        intColorPane.add(setIntColor, 1, 0);
+        intColorPane.setHgap(10);
+        settingsGridPane.add(intColorPane, 0, 3);
+
+        Label setSetColor = new Label("Set color of the settings menu");
+        ColorPicker setColorPicker = new ColorPicker();
+        setColorPicker.setValue(Color.GREY);
+        setColorPicker.valueProperty().addListener(new ChangeListener<Color>() {
+            @Override
+            public void changed(ObservableValue<? extends Color> observable, Color oldValue, Color newValue) {
+                tabColors[3] = newValue;
+                updateTabColors();
+                updateUIColor(newValue);
+            }
+        });
+        GridPane setColorPane = new GridPane();
+        setColorPane.add(setColorPicker, 0, 0);
+        setColorPane.add(setSetColor, 1, 0);
+        setColorPane.setHgap(10);
+        settingsGridPane.add(setColorPane, 0, 4);
+
+        settingsGridPane.setPadding(new Insets(20, 10, 10, 10));
+        settingsGridPane.setStyle("-fx-background-color: grey;");
+        settingsTab.setContent(settingsGridPane);
+        return settingsTab;
     }
 
     /**
@@ -436,7 +558,7 @@ public class Main extends Application {
         newCanvas.addEventHandler(MouseEvent.MOUSE_MOVED, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                if(!isMouseDragging) {
+                if (!isMouseDragging) {
                     MouseXPos = event.getX();
                     MouseYPos = event.getY();
                 }
@@ -450,16 +572,16 @@ public class Main extends Application {
                 double deltaYPix = event.getY() - MouseYPos;
                 deltaXCoord = (deltaXPix / XRES) * zoomTransform;
                 deltaYCoord = (deltaYPix / YRES) * zoomTransform;
-                double xDiff = Math.abs((bMIN_X - xOffset) - (bMAX_X  - xOffset));
+                double xDiff = Math.abs((bMIN_X - xOffset) - (bMAX_X - xOffset));
                 double newXDiff = zoomTransform * xDiff;
                 double movNeccesaryToAcheiveX = (newXDiff - xDiff) / 2;
                 MIN_X = (bMIN_X - deltaXCoord - xOffset) - movNeccesaryToAcheiveX;
-                MAX_X = (bMAX_X  - deltaXCoord - xOffset) + movNeccesaryToAcheiveX;
-                double yDiff = Math.abs((bMIN_Y - yOffset) - (bMAX_Y  - yOffset));
+                MAX_X = (bMAX_X - deltaXCoord - xOffset) + movNeccesaryToAcheiveX;
+                double yDiff = Math.abs((bMIN_Y - yOffset) - (bMAX_Y - yOffset));
                 double newYDiff = zoomTransform * yDiff;
                 double movNeccesaryToAcheiveY = (newYDiff - yDiff) / 2;
-                MIN_Y = (bMIN_Y  + yOffset + deltaYCoord) - movNeccesaryToAcheiveY;
-                MAX_Y = (bMAX_Y  + yOffset + deltaYCoord) + movNeccesaryToAcheiveY;
+                MIN_Y = (bMIN_Y + yOffset + deltaYCoord) - movNeccesaryToAcheiveY;
+                MAX_Y = (bMAX_Y + yOffset + deltaYCoord) + movNeccesaryToAcheiveY;
                 updateRender();
                 isMouseDragging = false;
             }
@@ -476,70 +598,87 @@ public class Main extends Application {
         newCanvas.addEventHandler(ScrollEvent.SCROLL, new EventHandler<ScrollEvent>() {
             @Override
             public void handle(ScrollEvent event) {
-                double  yScroll = event.getDeltaY();
-                if(yScroll < 0) {
+                double yScroll = event.getDeltaY();
+                if (yScroll < 0) {
                     zoomTransform *= 1.1;
-                } else if(yScroll > 0) {
-                    zoomTransform *=.9;
+                } else if (yScroll > 0) {
+                    zoomTransform *= .9;
                 }
-                double xDiff = Math.abs((bMIN_X - xOffset) - (bMAX_X  - xOffset));
+                double xDiff = Math.abs((bMIN_X - xOffset) - (bMAX_X - xOffset));
                 double newXDiff = zoomTransform * xDiff;
                 double movNecessaryToAchieveX = (newXDiff - xDiff) / 2;
                 MIN_X = (bMIN_X - xOffset) - movNecessaryToAchieveX;
-                MAX_X = (bMAX_X  - xOffset) + movNecessaryToAchieveX;
+                MAX_X = (bMAX_X - xOffset) + movNecessaryToAchieveX;
 
-                double yDiff = Math.abs((bMIN_Y - yOffset) - (bMAX_Y  - yOffset));
+                double yDiff = Math.abs((bMIN_Y - yOffset) - (bMAX_Y - yOffset));
                 double newYDiff = zoomTransform * yDiff;
                 double mobNecessaryToAchieveY = (newYDiff - yDiff) / 2;
-                MIN_Y = (bMIN_Y  + yOffset) - mobNecessaryToAchieveY;
-                MAX_Y = (bMAX_Y  + yOffset) + mobNecessaryToAchieveY;
+                MIN_Y = (bMIN_Y + yOffset) - mobNecessaryToAchieveY;
+                MAX_Y = (bMAX_Y + yOffset) + mobNecessaryToAchieveY;
                 gc.clearRect(0, 0, 10000, 10000);
                 updateRender();
                 isMouseDragging = false;
 
             }
         });
-        return  newCanvas;
+        return newCanvas;
     }
 
     /**
      * A method to render the main function
+     *
      * @param functionToRender the function object to be rendered
-     * @param renderColor the color with which the function shall be rendered
+     * @param renderColor      the color with which the function shall be rendered
      */
-    public static void renderFunction(Function functionToRender, Color renderColor) {
-        gc.beginPath();
-        gc.setLineWidth(baseLineWeight);
-        boolean isNaN = true;
-        boolean willBeNaN = false;
-        double delta = 1 / (double) XRES * zoomTransform;
-        if(renderColor.equals(Color.INDIANRED)) {
-            delta*=10;
-        }
-        for(double d = MIN_X; d < MAX_X; d += delta ){
-            double yValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[1];
-            double xValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[0];
-            isNaN = new Double(yValue).isNaN();
-            if(isNaN)
-                yValue = 0;
-            gc.lineTo(xValue, yValue);
-            willBeNaN = new Double(functionToRender.computeFunc(d + delta)).isNaN();
-            //if the values produced by the function change from being NaN to not NaN
-            if(isNaN != willBeNaN) {
-                if(isNaN = true) {
-                    gc.setStroke(Color.TRANSPARENT);
-                    gc.stroke();
-                    gc.beginPath();
-                }
-                else {
-                    gc.setStroke(renderColor);
-                    gc.stroke();
-                    gc.beginPath();
+    public static void renderFunction(Function functionToRender, Color renderColor, boolean safeRender) {
+        if(safeRender) {
+            gc.beginPath();
+            gc.setLineWidth(baseLineWeight);
+            boolean isNaN = true;
+            boolean willBeNaN = false;
+            double delta = 1 / (double) XRES * zoomTransform;
+            if (renderColor.equals(Color.INDIANRED)) {
+                delta *= 10;
+            }
+            for (double d = MIN_X; d < MAX_X; d += delta) {
+                double yValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[1];
+                double xValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[0];
+                isNaN = new Double(yValue).isNaN();
+                if (isNaN)
+                    yValue = 0;
+                gc.lineTo(xValue, yValue);
+                willBeNaN = new Double(functionToRender.computeFunc(d + delta)).isNaN();
+                //if the values produced by the function change from being NaN to not NaN
+                if (isNaN != willBeNaN) {
+                    if (isNaN = true) {
+                        gc.setStroke(Color.TRANSPARENT);
+                        gc.stroke();
+                        gc.beginPath();
+                    } else {
+                        gc.setStroke(renderColor);
+                        gc.stroke();
+                        gc.beginPath();
+                    }
                 }
             }
+            gc.setStroke(renderColor);
+            gc.stroke();
         }
-        gc.setStroke(renderColor);
-        gc.stroke();
+        else {
+            gc.beginPath();
+            gc.setLineWidth(baseLineWeight);
+            double delta = 1 / (double) XRES * zoomTransform;
+            if (renderColor.equals(Color.INDIANRED)) {
+                delta *= 10;
+            }
+            for (double d = MIN_X; d < MAX_X; d += delta) {
+                double yValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[1];
+                double xValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[0];
+                gc.lineTo(xValue, yValue);
+            }
+            gc.setStroke(renderColor);
+            gc.stroke();
+        }
     }
 
     /**
@@ -560,7 +699,7 @@ public class Main extends Application {
         gc.clearRect(0, 0, 10000, 10000);
         riemannSumDrawer.draw();
         renderAxis();
-        renderFunction(mainFunction, Color.BLUE);
+        renderFunction(mainFunction, Color.BLUE, mainFunction.isSafeRender());
         drvApproxLoc.setMax(MAX_X);
         drvApproxLoc.setMin(MIN_X);
         tsApproxLoc.setMax(MAX_X);
@@ -574,23 +713,22 @@ public class Main extends Application {
         secantDrawer.draw();
         derivativeGraphDrawer.draw();
         taylorSeriesDrawer.draw();
-        System.out.println(consolePane.getVvalue());
     }
 
     /**
-     *A method to write text to write text to rhe program console. Either as red error text or black message text.
-     * @param text the text to be written to the console
+     * A method to write text to write text to the program console. Either as red error text or black message text.
+     *
+     * @param text    the text to be written to the console
      * @param isError true means the text will be rendered as red error text, false means the text will be rendered as
      *                black message text.
      */
     public static void writeConsole(String text, boolean isError) {
-        if(isError){
+        if (isError) {
             Text newErrorText = new Text(text);
             newErrorText.setFill(Color.RED);
             newErrorText.setFont(Font.font("Monospaced", FontPosture.REGULAR, 11.0));
             console.getChildren().add(newErrorText);
-        }
-        else {
+        } else {
             Text newText = new Text(text);
             newText.setFill(Color.BLACK);
             newText.setFont(Font.font("Monospaced", FontPosture.REGULAR, 11.0));
@@ -604,12 +742,14 @@ public class Main extends Application {
 
     /**
      * A function which draws a line between two points.
+     *
      * @param xOne x coordinate of point one
      * @param yOne y coordinate of point one
      * @param xTwo x coordinate of point two
      * @param yTwo y coordinate of point two
+     * @param color the color of the line
      */
-    public static void drawLine(double xOne, double yOne, double xTwo, double yTwo) {
+    public static void drawLine(double xOne, double yOne, double xTwo, double yTwo, Color color) {
         double slope = (yTwo - yOne) / (xTwo - xOne);
         List<Token> linearEquation = new ArrayList<>();
         linearEquation.add(new Constant(yOne));
@@ -621,11 +761,12 @@ public class Main extends Application {
         linearEquation.add(new Minus());
         linearEquation.add(new Constant(xOne));
         linearEquation.add(new RightParens());
-        renderFunction(new Function(linearEquation), Color.MEDIUMSEAGREEN);
+        renderFunction(new Function(linearEquation), color, false);
     }
 
     /**
      * A function which draws a line segment between two points.
+     *
      * @param xOne x coordinate of point one
      * @param yOne y coordinate of point one
      * @param xTwo x coordinate of point two
@@ -662,7 +803,7 @@ public class Main extends Application {
         double canvasHeight = height - consoleHeight - inputBarHeight - bottomEdgeHeight;
         toolTab.setMinHeight(height - inputBarHeight - bottomEdgeHeight);
         toolTab.setMaxHeight(height - inputBarHeight - bottomEdgeHeight);
-        rightEdge.setHeight(height - bottomEdgeHeight - inputBarHeight  );
+        rightEdge.setHeight(height - bottomEdgeHeight - inputBarHeight);
         consolePane.setPrefWidth(middleWidth);
         console.setPrefWidth(middleWidth);
         inputField.setPrefWidth(width);
@@ -674,19 +815,22 @@ public class Main extends Application {
         double newViewLength = canvas.getWidth() / XRES;
         double viewLengthDelta = Math.abs(bMAX_X - bMIN_X) - newViewLength;
         bMAX_X = bMAX_X - viewLengthDelta;
-        double xDiff = Math.abs((bMIN_X - xOffset) - (bMAX_X  - xOffset));
+        double xDiff = Math.abs((bMIN_X - xOffset) - (bMAX_X - xOffset));
         double newXDiff = zoomTransform * xDiff;
         double movNeccesaryToAcheiveX = (newXDiff - xDiff) / 2;
         MIN_X = (bMIN_X - deltaXCoord - xOffset) - movNeccesaryToAcheiveX;
-        MAX_X = (bMAX_X  - deltaXCoord - xOffset) + movNeccesaryToAcheiveX;
-        double yDiff = Math.abs((bMIN_Y - yOffset) - (bMAX_Y  - yOffset));
+        MAX_X = (bMAX_X - deltaXCoord - xOffset) + movNeccesaryToAcheiveX;
+        double yDiff = Math.abs((bMIN_Y - yOffset) - (bMAX_Y - yOffset));
         double newYDiff = zoomTransform * yDiff;
         double movNeccesaryToAcheiveY = (newYDiff - yDiff) / 2;
-        MIN_Y = (bMIN_Y  + yOffset + deltaYCoord) - movNeccesaryToAcheiveY;
-        MAX_Y = (bMAX_Y  + yOffset + deltaYCoord) + movNeccesaryToAcheiveY;
+        MIN_Y = (bMIN_Y + yOffset + deltaYCoord) - movNeccesaryToAcheiveY;
+        MAX_Y = (bMAX_Y + yOffset + deltaYCoord) + movNeccesaryToAcheiveY;
         updateRender();
     }
 
+    /**
+     * Attaches change listeners to the stage which track its size and update UI elements when appropriate.
+     */
     private void attachChangeListeners() {
         stage.widthProperty().addListener(new ChangeListener<Number>() {
             @Override
@@ -703,13 +847,24 @@ public class Main extends Application {
     }
 
     /**
+     * Changes the color of the bottom and right edges
+     *
+     * @param color the color to change to
+     */
+    private void updateUIColor(Color color) {
+        rightEdge.fillProperty().setValue(color);
+        bottomEdge.fillProperty().setValue(color);
+    }
+
+    /**
      * A static method which returns a number represented as a rounded string
+     *
      * @param toRound a double representing an unrounded number
      * @return a String representing the input rounded to the correct number of decimal places.
      */
     public static String round(double toRound) {
-        double minVisible = Math.pow (10, -1 * (roundLevel - 1));
-        if(toRound > -minVisible && toRound < minVisible) {
+        double minVisible = Math.pow(10, -1 * (roundLevel - 1));
+        if (toRound > -minVisible && toRound < minVisible) {
             toRound = 0;
             String zeroOut = "0.";
             for (int i = 0; i < roundLevel; i++) {
@@ -722,14 +877,23 @@ public class Main extends Application {
         String outputString = asString.substring(0, asString.indexOf(".") + roundLevel);
         int leastShown = Integer.parseInt(Character.toString(asString.charAt(asString.indexOf(".") + roundLevel)));
         char greatestUnshown = asString.charAt(asString.indexOf(".") + roundLevel + 1);
-        if(Integer.parseInt(Character.toString(greatestUnshown)) >= 5) {
-            outputString += (leastShown + 1);
 
-        }
-        else {
-            outputString+=leastShown;
+        if (Integer.parseInt(Character.toString(greatestUnshown)) >= 5) {
+            outputString += (leastShown + 1);
+        } else {
+            outputString += leastShown;
         }
         return outputString;
+    }
+
+    /**
+     * Updates tab colors according to the tab colors array
+     */
+    private void updateTabColors() {
+        for (int i = 0; i < toolTab.getTabs().size(); i++) {
+            toolTab.getTabs().get(i).getContent().setStyle("-fx-background-color: #" +
+                    tabColors[i].toString().substring(2) + ";");
+        }
     }
 
     public static void resetMainFunction(Function newFunction) {
@@ -781,7 +945,8 @@ public class Main extends Application {
         return canvas.getHeight();
     }
 
-    public static void main(String[] args)  {
-        launch(args );
+    public static void main(String[] args) {
+        System.out.println(Math.pow(-2.0, 1.3));
+        launch(args);
     }
 }

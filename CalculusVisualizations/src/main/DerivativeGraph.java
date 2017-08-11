@@ -5,6 +5,7 @@ import javafx.scene.paint.Color;
 
 public class DerivativeGraph extends Visualizer{
     private int order;
+    private Color mainColor = Color.MEDIUMSEAGREEN;
 
     public DerivativeGraph(int order, Function function) {
         this.order = order;
@@ -24,13 +25,17 @@ public class DerivativeGraph extends Visualizer{
                 double xValue = Graph.getPixelSpace(d, 5)[0];
                 gc.lineTo(xValue, yValue);
             }
-            gc.setStroke(Color.MEDIUMSEAGREEN);
+            gc.setStroke(mainColor);
             gc.stroke();
         }
     }
 
     public void setOrder(int order) {
         this.order = order;
+    }
+
+    public void setMainColor(Color mainColor) {
+        this.mainColor = mainColor;
     }
 }
 

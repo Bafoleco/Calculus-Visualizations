@@ -16,6 +16,7 @@ public class Function {
 
     private final double deltaX = 0.001;
     private List<Token> expression;
+    private boolean safeRender = false;
 
     /**
      * This method creates a function from a string representing an expression by parsing that expression into
@@ -38,7 +39,7 @@ public class Function {
      * @param expression a user input string representing a mathematical expression in infix notation
      * @return the original expression, still in infix notation, represented as a ser
      */
-    private static List<Token> tokenify(String expression) {
+    private List<Token> tokenify(String expression) {
         //creates an ArrayList of tokens to be filled and eventually returned of tokens
         List<Token> tokenList = new ArrayList<>();
 
@@ -118,15 +119,18 @@ public class Function {
             else if(expression.substring(index).indexOf("sqrt") == 0) {
                 tokenList.add(new Sqrt());
                 index += 4;
+                safeRender = true;
             }
             else if(expression.substring(index).indexOf("ln") == 0 || expression.substring(index).indexOf("LN") == 0) {
                 tokenList.add(new NaturalLog());
                 index += 2;
+                safeRender = true;
             }
             else if(expression.substring(index).indexOf("log") == 0 || expression.substring(index).indexOf("Log") == 0 ||
                     expression.substring(index).indexOf("LOG") == 0) {
                 tokenList.add(new LogBase10());
                 index += 3;
+                safeRender = true;
             }
             else if(expression.substring(index).indexOf("abs") == 0 || expression.substring(index).indexOf("Abs") == 0) {
                 tokenList.add(new AbsoluteValue());
@@ -193,6 +197,21 @@ public class Function {
 
         //post processing
         for(int i = 0; i < tokenList.size(); i++) {
+            if(tokenList.get(i).getClass().getSimpleName().equals("Exponentiate")) {
+                if(new Double(tokenList.get(i + 1).getValue()) % 1 != 0) {
+                    safeRender = true;
+                }
+            }
+            if(i < tokenList.size() - 1) {
+                if(tokenList.get(i).getClass().getSimpleName().equals("RightParens") &&
+                        tokenList.get(i+1).getClass().getSimpleName().equals("LeftParens"))
+                    tokenList.add(i + 1, new Times());
+                else if((tokenList.get(i).getClass().getSimpleName().equals("Variable") ||
+                        tokenList.get(i).getClass().getSimpleName().equals("Constant"))  &&
+                        (tokenList.get(i + 1).getClass().getSimpleName().equals("Variable") ||
+                                tokenList.get(i + 1).getClass().getSimpleName().equals("Constant")))
+                    tokenList.add(i + 1, new Times());
+            }
             if(tokenList.get(i).getClass().getSimpleName().equals("Minus") && (i == 0 ||
                     !tokenList.get(i - 1).getClass().getSimpleName().equals("Variable") &&
                     !tokenList.get(i - 1).getClass().getSimpleName().equals("Constant")))
@@ -276,5 +295,9 @@ public class Function {
 
     public List<Token> getExpression() {
         return expression;
+    }
+
+    public boolean isSafeRender() {
+        return safeRender;
     }
 }
