@@ -276,12 +276,12 @@ Fixed (for now) issue where functions with limited domains rendered with solid b
 ## August 8th, 2017
 
 ### Work Times
-In: 3:25PM
-Out: 7:52PM
-In: 8:44PM
-Out: 8:58PM   
-In: 10:16PM
-Out: 12:18AM (next day)
+In: 3:25PM  
+Out: 7:52PM  
+In: 8:44PM  
+Out: 8:58PM      
+In: 10:16PM  
+Out: 12:18AM (next day)  
 ### Total Time Worked
 6:43
 
