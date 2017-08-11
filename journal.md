@@ -300,3 +300,15 @@ Out: 11:50PM
 ### Work Done
 Made UI elements dynamicaly change color to match tab background.  
 Created a settings menu.  
+
+## August 11th, 2017
+
+### Work Times
+In: 12:20PM
+Out: 2:49PM
+### Total Time Worked
+1:20
+### Work Done
+Added ability for user to customize UI colors  
+Added ability for * to be inferred from token list 
+Made use of safeRender function dependent to improve performance  
