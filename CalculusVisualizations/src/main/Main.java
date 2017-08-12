@@ -181,8 +181,8 @@ public class Main extends Application {
         stage.setScene(graphicsScene);
         stage.setMinHeight(600);
         stage.setMinWidth(600);
-        attachChangeListeners();
         stage.show();
+        attachChangeListeners();
         updateRender();
     }
 
@@ -442,7 +442,6 @@ public class Main extends Application {
                 if (event.getCode().toString().equals("ENTER")) {
                     double inputValue = Double.parseDouble(inputField.getText());
                     if (inputValue >= 0.5 && inputValue <= 8) {
-                        System.out.println("Hi");
                         baseLineWeight = Double.parseDouble(inputField.getText());
                     }
                     //11:50
@@ -805,7 +804,6 @@ public class Main extends Application {
         toolTab.setMaxHeight(height - inputBarHeight - bottomEdgeHeight);
         rightEdge.setHeight(height - bottomEdgeHeight - inputBarHeight);
         consolePane.setPrefWidth(middleWidth);
-        console.setPrefWidth(middleWidth);
         inputField.setPrefWidth(width);
         bottomEdge.setWidth(width);
         canvas.setWidth(middleWidth);
@@ -820,11 +818,20 @@ public class Main extends Application {
         double movNeccesaryToAcheiveX = (newXDiff - xDiff) / 2;
         MIN_X = (bMIN_X - deltaXCoord - xOffset) - movNeccesaryToAcheiveX;
         MAX_X = (bMAX_X - deltaXCoord - xOffset) + movNeccesaryToAcheiveX;
+
+
+        double newViewHeight = canvas.getHeight() / (double) YRES;
+        System.out.println(canvasHeight);
+        System.out.println(newViewHeight);
+        double viewHeightDelta = Math.abs(bMAX_Y - bMIN_Y) - newViewHeight;
+        System.out.println(viewHeightDelta);
+        bMAX_Y = bMAX_Y - viewHeightDelta;
         double yDiff = Math.abs((bMIN_Y - yOffset) - (bMAX_Y - yOffset));
         double newYDiff = zoomTransform * yDiff;
         double movNeccesaryToAcheiveY = (newYDiff - yDiff) / 2;
         MIN_Y = (bMIN_Y + yOffset + deltaYCoord) - movNeccesaryToAcheiveY;
         MAX_Y = (bMAX_Y + yOffset + deltaYCoord) + movNeccesaryToAcheiveY;
+        System.out.println("MinX, MaxX, MinY, MaxY" + MIN_X + "," + MAX_X + "," + MIN_Y + "," + MAX_Y);
         updateRender();
     }
 
@@ -946,7 +953,6 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
-        System.out.println(Math.pow(-2.0, 1.3));
         launch(args);
     }
 }

@@ -298,7 +298,7 @@ Out: 11:50PM
 ### Total Time Worked
 1:20
 ### Work Done
-Made UI elements dynamicaly change color to match tab background.  
+Made UI elements dynamically change color to match tab background.  
 Created a settings menu.  
 
 ## August 11th, 2017
@@ -306,9 +306,14 @@ Created a settings menu.
 ### Work Times
 In: 12:20PM
 Out: 2:49PM
+In: 4:10PM 
+Out: 5:26
 ### Total Time Worked
-1:20
+
 ### Work Done
 Added ability for user to customize UI colors  
 Added ability for * to be inferred from token list 
-Made use of safeRender function dependent to improve performance  
+Made use of safeRender function dependent to improve performance 
+Fixed vertical resizing changing aspect ratio
+Fixed issue with ugly text reflow during horizontal scaling.
+
