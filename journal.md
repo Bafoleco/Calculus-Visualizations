@@ -317,3 +317,15 @@ Made use of safeRender function dependent to improve performance
 Fixed vertical resizing changing aspect ratio
 Fixed issue with ugly text reflow during horizontal scaling.
 
+## August 12th, 2017
+
+### Work Times
+In: 1:40PM
+
+### Total Time Worked
+
+### Work Done
+Fixed text lengths to reduce size of the tool TabPane
+Fixed issue where bottom and right edges did not appear on start up
+Added buttons to reset window and reset origin.  
+Fixed isMaclaurin checkbox so that when activated it resets the xPos of the taylor approximation to zero.
