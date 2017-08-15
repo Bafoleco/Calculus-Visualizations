@@ -321,7 +321,7 @@ Fixed issue with ugly text reflow during horizontal scaling.
 
 ### Work Times
 In: 1:40PM
-
+Out: 4:26PM
 ### Total Time Worked
 
 ### Work Done
@@ -329,3 +329,6 @@ Fixed text lengths to reduce size of the tool TabPane
 Fixed issue where bottom and right edges did not appear on start up
 Added buttons to reset window and reset origin.  
 Fixed isMaclaurin checkbox so that when activated it resets the xPos of the taylor approximation to zero.
+Fixed issue where slider values were clipped to keep them visible resulting in confusing visuals.
+Fixed issue where integral lower bound marking line protruded above point in an ugly manner and rewrote system using the drawLineSegment method.  
+
