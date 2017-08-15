@@ -330,5 +330,21 @@ Fixed issue where bottom and right edges did not appear on start up
 Added buttons to reset window and reset origin.  
 Fixed isMaclaurin checkbox so that when activated it resets the xPos of the taylor approximation to zero.
 Fixed issue where slider values were clipped to keep them visible resulting in confusing visuals.
-Fixed issue where integral lower bound marking line protruded above point in an ugly manner and rewrote system using the drawLineSegment method.  
+Fixed issue where integral lower bound marking line protruded above point in an ugly manner and rewrote system using the drawLineSegment method. 
+
+## August 13th, 2017
+
+### Work Times
+In: 9:35PM
+Out: 11:14PM
+### Total Time Worked
+
+### Work Done
+Added support for displaying critical points.  
+Fixed Issue where critical UI elements ould be deleted
+
+### Learning Done
+Researched the definitions of critical and inflexction points. Determined that inflection points would be to difficult to calculate.  
+Read about L'hopitales rule.  
+Read abot epsilon delta limits
 
