@@ -97,6 +97,7 @@ public class TaylorSeries extends Visualizer {
 
     public void setxPos(double xPos) {
         this.xPos = xPos;
+        createTaylorPolynomials();
     }
 
     public void setMaclaurin(boolean maclaurin) {

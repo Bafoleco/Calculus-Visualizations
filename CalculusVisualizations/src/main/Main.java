@@ -1,5 +1,6 @@
 package main;
 
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLBoundOperation;
 import javafx.scene.layout.Background;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.*;
@@ -30,6 +31,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 
+import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,7 +93,8 @@ public class Main extends Application {
     private static SecantLine secantDrawer = new SecantLine(0, 2, mainFunction);
     private static DerivativeGraph derivativeGraphDrawer = new DerivativeGraph(1, mainFunction);
     private static TaylorSeries taylorSeriesDrawer = new TaylorSeries(1, 0, mainFunction);
-    private static RiemannSum riemannSumDrawer = new RiemannSum(-2, 2, mainFunction);
+    private static RiemannSum riemannSumDrawer = new RiemannSum(-1.571, 1.571, mainFunction);
+    private static CriticalPoint criticalPointDrawer = new CriticalPoint(mainFunction);
 
     public void start(Stage primaryStage) {
         //init
@@ -180,10 +183,11 @@ public class Main extends Application {
         //start
         stage.setScene(graphicsScene);
         stage.setMinHeight(600);
-        stage.setMinWidth(600);
+        stage.setMinWidth(1200);
         stage.show();
         attachChangeListeners();
         updateRender();
+        updateUISize();
     }
 
     /**
@@ -192,11 +196,7 @@ public class Main extends Application {
      * @return a Tab full of various controls with a light red background
      */
     private Tab createTsTab() {
-        Tab taylorSeriesTab = new Tab("Taylor Series") {
-            public Color getColor() {
-                return Color.INDIANRED;
-            }
-        };
+        Tab taylorSeriesTab = new Tab("Taylor Series");
         GridPane tsGridPane = new GridPane();
         tsGridPane.setVgap(20);
 
@@ -216,6 +216,8 @@ public class Main extends Application {
             @Override
             public void handle(ActionEvent event) {
                 taylorSeriesDrawer.setMaclaurin(isMaclaurinCheckBox.isSelected());
+                taylorSeriesDrawer.setxPos(0);
+                tsApproxLoc.setValue(0);
                 updateRender();
             }
         });
@@ -242,7 +244,6 @@ public class Main extends Application {
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 if (!taylorSeriesDrawer.isMaclaurin()) {
                     taylorSeriesDrawer.setxPos(tsApproxLoc.getValue());
-                    taylorSeriesDrawer.createTaylorPolynomials();
                 } else {
                     tsApproxLoc.setValue(0);
                 }
@@ -271,10 +272,12 @@ public class Main extends Application {
         });
         tsGridPane.add(tsErrorLoc, 0, 5);
 
-
-        taylorSeriesTab.setContent(tsGridPane);
         tsGridPane.setStyle(" -fx-background-color: indianred;");
         tsGridPane.setPadding(new Insets(20, 10, 10, 10));
+
+        taylorSeriesTab.setContent(tsGridPane);
+        taylorSeriesTab.setClosable(false);
+
         return taylorSeriesTab;
     }
 
@@ -287,12 +290,16 @@ public class Main extends Application {
         Tab drvTab = new Tab("Derivative");
         GridPane drvGridPane = new GridPane();
         drvGridPane.setVgap(20);
+        CheckBox critCheckBox = new CheckBox("Render Critical Points");
 
         CheckBox drvCheckBox = new CheckBox("Render the derivative");
         drvCheckBox.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 derivativeGraphDrawer.setShowing(drvCheckBox.isSelected());
+                if(!derivativeGraphDrawer.showing &&criticalPointDrawer.showing) {
+                    critCheckBox.fire();
+                }
                 updateRender();
             }
         });
@@ -347,17 +354,37 @@ public class Main extends Application {
         drvGridPane.add(hValueSlider, 0, 6);
 
 
+        critCheckBox.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if(derivativeGraphDrawer.showing) {
+                    criticalPointDrawer.setShowing(critCheckBox.isSelected());
+                    updateRender();
+                } else if(criticalPointDrawer.showing) {
+                    criticalPointDrawer.setShowing(critCheckBox.isSelected());
+                    updateRender();
+                    writeConsole("ERROR: the derivative graph must be enabled for critical points to be drawn", true);
+
+                }
+                else {
+                    critCheckBox.selectedProperty().setValue(false);
+                    writeConsole("ERROR: the derivative graph must be enabled for critical points to be drawn", true);
+                }
+            }
+        });
+
+        drvGridPane.add(critCheckBox, 0, 7);
+
         drvGridPane.setStyle(" -fx-background-color: mediumseagreen;");
         drvGridPane.setPadding(new Insets(20, 10, 10, 10));
         drvTab.setContent(drvGridPane);
+        drvTab.setClosable(false);
         return drvTab;
     }
 
     private Tab createIntegralTab() {
         Tab integralTab = new Tab("Integral");
         GridPane integralGridPane = new GridPane();
-        //TODO 12:20 start
-
         integralGridPane.setVgap(20);
 
         CheckBox riemannCheckBox = new CheckBox("Render the Riemann Sum");
@@ -373,7 +400,7 @@ public class Main extends Application {
         //TODO
         //prevent upper and lower bounds from crossing
         //upper and lower bounds slider
-        lowerBound = new Slider(bMIN_X, bMAX_X, (bMAX_X + bMIN_X) / 2);
+        lowerBound = new Slider(bMIN_X, bMAX_X, -1.571);
         lowerBound.setTooltip(new Tooltip("Controls the lower bound of integration"));
         lowerBound.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
@@ -382,7 +409,7 @@ public class Main extends Application {
                 updateRender();
             }
         });
-        upperBound = new Slider(bMIN_X, bMAX_X, (bMAX_X + bMIN_X) / 2);
+        upperBound = new Slider(bMIN_X, bMAX_X, 1.571);
         upperBound.setTooltip(new Tooltip("Controls the upper bound of integration"));
         upperBound.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
@@ -426,9 +453,14 @@ public class Main extends Application {
         integralGridPane.setStyle(" -fx-background-color: blueviolet;");
         integralGridPane.setPadding(new Insets(20, 10, 10, 10));
         integralTab.setContent(integralGridPane);
+        integralTab.setClosable(false);
         return integralTab;
     }
 
+    /**
+     * A helper method to create the tab holding controls for program settings
+     * @return the tab of UI controls
+     */
     private Tab createSettingsTab() {
         Tab settingsTab = new Tab("Settings");
         GridPane settingsGridPane = new GridPane();
@@ -456,8 +488,8 @@ public class Main extends Application {
         wtPane.add(setLineWt, 1, 0);
         wtPane.setHgap(10);
         settingsGridPane.add(wtPane, 0, 0);
-
-        Label setTSColor = new Label("Set color of the Taylor Series");
+        settingsGridPane.add(new Label("Set UI colors:"), 0,1 );
+        Label setTSColor = new Label("Taylor Series");
         ColorPicker tsColorPicker = new ColorPicker();
         tsColorPicker.setValue(Color.INDIANRED);
         tsColorPicker.valueProperty().addListener(new ChangeListener<Color>() {
@@ -472,9 +504,8 @@ public class Main extends Application {
         tsColorPane.add(tsColorPicker, 0, 0);
         tsColorPane.add(setTSColor, 1, 0);
         tsColorPane.setHgap(10);
-        settingsGridPane.add(tsColorPane, 0, 1);
-
-        Label setDrvColor = new Label("Set color of the Derivative visualiser");
+        settingsGridPane.add(tsColorPane, 0, 2);
+        Label setDrvColor = new Label("Derivative visualiser");
         ColorPicker drvColorPicker = new ColorPicker();
         drvColorPicker.setValue(Color.MEDIUMSEAGREEN);
         drvColorPicker.valueProperty().addListener(new ChangeListener<Color>() {
@@ -490,9 +521,9 @@ public class Main extends Application {
         drvColorPane.add(drvColorPicker, 0, 0);
         drvColorPane.add(setDrvColor, 1, 0);
         drvColorPane.setHgap(10);
-        settingsGridPane.add(drvColorPane, 0, 2);
+        settingsGridPane.add(drvColorPane, 0, 3);
 
-        Label setIntColor = new Label("Set color of the Riemann Sum visualiser");
+        Label setIntColor = new Label("Riemann Sum Visualiser");
         ColorPicker intColorPicker = new ColorPicker();
         intColorPicker.setValue(Color.BLUEVIOLET);
         intColorPicker.valueProperty().addListener(new ChangeListener<Color>() {
@@ -507,9 +538,9 @@ public class Main extends Application {
         intColorPane.add(intColorPicker, 0, 0);
         intColorPane.add(setIntColor, 1, 0);
         intColorPane.setHgap(10);
-        settingsGridPane.add(intColorPane, 0, 3);
+        settingsGridPane.add(intColorPane, 0, 4);
 
-        Label setSetColor = new Label("Set color of the settings menu");
+        Label setSetColor = new Label("Settings Menu");
         ColorPicker setColorPicker = new ColorPicker();
         setColorPicker.setValue(Color.GREY);
         setColorPicker.valueProperty().addListener(new ChangeListener<Color>() {
@@ -524,22 +555,55 @@ public class Main extends Application {
         setColorPane.add(setColorPicker, 0, 0);
         setColorPane.add(setSetColor, 1, 0);
         setColorPane.setHgap(10);
-        settingsGridPane.add(setColorPane, 0, 4);
-
+        settingsGridPane.add(setColorPane, 0, 5);
+        Button resetWindowButton = new Button("Reset Window");
+        resetWindowButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                resetWindow();
+                updateRender();
+            }
+        });
+        Button originToCenter = new Button("Set Origin to Center");
+        originToCenter.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                xOffset = 0;
+                yOffset = 0;
+                double xDiff = Math.abs(bMIN_X - bMAX_X);
+                double newXDiff = zoomTransform * xDiff;
+                double movNecessaryToAchieveX = (newXDiff - xDiff) / 2;
+                MIN_X = bMIN_X  - movNecessaryToAchieveX;
+                MAX_X = bMAX_X + movNecessaryToAchieveX;
+                double yDiff = Math.abs(bMIN_Y - bMAX_Y);
+                double newYDiff = zoomTransform * yDiff;
+                double mobNecessaryToAchieveY = (newYDiff - yDiff) / 2;
+                MIN_Y = bMIN_Y - mobNecessaryToAchieveY;
+                MAX_Y = bMAX_Y + mobNecessaryToAchieveY;
+                updateRender();
+            }
+        });
+        settingsGridPane.add(resetWindowButton, 0, 6);
+        settingsGridPane.add(originToCenter, 0, 7);
         settingsGridPane.setPadding(new Insets(20, 10, 10, 10));
         settingsGridPane.setStyle("-fx-background-color: grey;");
         settingsTab.setContent(settingsGridPane);
+        settingsTab.setClosable(false);
         return settingsTab;
     }
 
     /**
-     * A method which resets the variables representing the portion of the graph rendered to their base value
+     * A method which resets the variables representing the portion of the graph rendered to their base value and
+     * resets the transformations applied to the window.
      */
     private void resetWindow() {
         MIN_X = bMIN_X;
         MIN_Y = bMIN_Y;
         MAX_X = bMAX_X;
         MAX_Y = bMAX_Y;
+        zoomTransform = 1;
+        xOffset = 0;
+        yOffset = 0;
     }
 
     /**
@@ -614,7 +678,6 @@ public class Main extends Application {
                 double mobNecessaryToAchieveY = (newYDiff - yDiff) / 2;
                 MIN_Y = (bMIN_Y + yOffset) - mobNecessaryToAchieveY;
                 MAX_Y = (bMAX_Y + yOffset) + mobNecessaryToAchieveY;
-                gc.clearRect(0, 0, 10000, 10000);
                 updateRender();
                 isMouseDragging = false;
 
@@ -699,19 +762,30 @@ public class Main extends Application {
         riemannSumDrawer.draw();
         renderAxis();
         renderFunction(mainFunction, Color.BLUE, mainFunction.isSafeRender());
-        drvApproxLoc.setMax(MAX_X);
-        drvApproxLoc.setMin(MIN_X);
-        tsApproxLoc.setMax(MAX_X);
-        tsApproxLoc.setMin(MIN_X);
-        tsErrorLoc.setMin(MIN_X);
-        tsErrorLoc.setMax(MAX_X);
-        lowerBound.setMin(MIN_X);
-        lowerBound.setMax(MAX_X);
-        upperBound.setMin(MIN_X);
-        upperBound.setMax(MAX_X);
-        secantDrawer.draw();
         derivativeGraphDrawer.draw();
         taylorSeriesDrawer.draw();
+        secantDrawer.draw();
+        criticalPointDrawer.draw();
+        updateSliders();
+        criticalPointDrawer.cullLists();
+
+    }
+
+    /**
+     * Updates the mins and maxes of UI sliders to changing window settings.
+     */
+    private static void updateSliders() {
+        drvApproxLoc.setMax(Math.max(MAX_X, drvApproxLoc.getValue()));
+        drvApproxLoc.setMin(Math.min(MIN_X, drvApproxLoc.getValue()));
+        tsApproxLoc.setMax(Math.max(MAX_X, tsApproxLoc.getValue()));
+        tsApproxLoc.setMin(Math.min(MIN_X, tsApproxLoc.getValue()));
+        tsErrorLoc.setMax(Math.max(MAX_X, tsErrorLoc.getValue()));
+        tsErrorLoc.setMin(Math.min(MIN_X, tsErrorLoc.getValue()));
+        lowerBound.setMax(Math.max(MAX_X, lowerBound.getValue()));
+        lowerBound.setMin(Math.min(MIN_X, lowerBound.getValue()));
+        upperBound.setMax(Math.max(MAX_X, upperBound.getValue()));
+        upperBound.setMin(Math.min(MIN_X, upperBound.getValue()));
+
     }
 
     /**
@@ -821,17 +895,13 @@ public class Main extends Application {
 
 
         double newViewHeight = canvas.getHeight() / (double) YRES;
-        System.out.println(canvasHeight);
-        System.out.println(newViewHeight);
         double viewHeightDelta = Math.abs(bMAX_Y - bMIN_Y) - newViewHeight;
-        System.out.println(viewHeightDelta);
         bMAX_Y = bMAX_Y - viewHeightDelta;
         double yDiff = Math.abs((bMIN_Y - yOffset) - (bMAX_Y - yOffset));
         double newYDiff = zoomTransform * yDiff;
         double movNeccesaryToAcheiveY = (newYDiff - yDiff) / 2;
         MIN_Y = (bMIN_Y + yOffset + deltaYCoord) - movNeccesaryToAcheiveY;
         MAX_Y = (bMAX_Y + yOffset + deltaYCoord) + movNeccesaryToAcheiveY;
-        System.out.println("MinX, MaxX, MinY, MaxY" + MIN_X + "," + MAX_X + "," + MIN_Y + "," + MAX_Y);
         updateRender();
     }
 
@@ -903,12 +973,17 @@ public class Main extends Application {
         }
     }
 
+    /**
+     * A function to switch the main function being rendered. It resets the visualizers and re-renders the canvas.
+     * @param newFunction the function which will replace the current mainFunction
+     */
     public static void resetMainFunction(Function newFunction) {
         mainFunction = newFunction;
         secantDrawer.setFunction(mainFunction);
         derivativeGraphDrawer.setFunction(mainFunction);
         taylorSeriesDrawer.setFunction(mainFunction);
         riemannSumDrawer.setFunction(mainFunction);
+        criticalPointDrawer.setFunction(mainFunction);
         updateRender();
     }
 
@@ -950,6 +1025,10 @@ public class Main extends Application {
 
     public static double getHeight() {
         return canvas.getHeight();
+    }
+
+    public static CriticalPoint getCriticalPointDrawer() {
+        return criticalPointDrawer;
     }
 
     public static void main(String[] args) {

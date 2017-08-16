@@ -6,6 +6,7 @@ import javafx.scene.paint.Color;
 public class DerivativeGraph extends Visualizer{
     private int order;
     private Color mainColor = Color.MEDIUMSEAGREEN;
+    private double lastY;
 
     public DerivativeGraph(int order, Function function) {
         this.order = order;
@@ -20,10 +21,20 @@ public class DerivativeGraph extends Visualizer{
             double MAX_X = Main.getMax_X();
             double zoomTransform = Main.getZoomTransform();
             int XRES = Main.getXRES();
-            for(double d = MIN_X; d < MAX_X; d += (5 / (double) XRES * zoomTransform)){
-                double yValue = Graph.getPixelSpace(d, function.takeDerivative(order, d))[1];
+            double delta = 5 / (double) XRES * zoomTransform;
+            for(double d = MIN_X; d < MAX_X; d += delta) {
+                double thisY = function.takeDerivative(order, d);
+                //if the value of the derivative passed zer0
+                if((thisY > 0 && lastY < 0) || (thisY < 0 && lastY > 0)) {
+                    Main.getCriticalPointDrawer().addPoint( d - 0.5 * delta);
+                }
+                lastY = thisY;
+
+
+                double yValue = Graph.getPixelSpace(d, thisY)[1];
                 double xValue = Graph.getPixelSpace(d, 5)[0];
                 gc.lineTo(xValue, yValue);
+
             }
             gc.setStroke(mainColor);
             gc.stroke();

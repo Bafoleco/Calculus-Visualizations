@@ -5,12 +5,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 public class RiemannSum extends Visualizer{
-
-    double lowerBound;
-    double upperBound;
-    int numSteps = 1;
-    String areaUnderCurve;
+    private double lowerBound;
+    private double upperBound;
+    private int numSteps = 1;
+    private String areaUnderCurve;
     private Color mainColor = Color.BLUEVIOLET;
+
     /**
      * Mode 1 = left
      * Mode 2 = right
@@ -18,7 +18,7 @@ public class RiemannSum extends Visualizer{
      * Mode 4 = maximum
      * Mode 5 = middle
      */
-    int mode = 1;
+    private int mode = 1;
 
     public RiemannSum(double lowerBound, double upperBound, Function function) {
         this.lowerBound = lowerBound;
@@ -32,6 +32,7 @@ public class RiemannSum extends Visualizer{
             GraphicsContext gc = Main.getGc();
             double area = 0;
             double length = Math.abs(lowerBound - upperBound);
+            System.out.println("lower bound = " + lowerBound);
             double stepSize = length / numSteps;
             for(double d = lowerBound; d < upperBound - 0.01; d += stepSize ) {
                 double height = getValue(d, stepSize);
@@ -54,22 +55,10 @@ public class RiemannSum extends Visualizer{
             }
             new Point(lowerBound, function.computeFunc(lowerBound), mainColor).drawPoint();
             new Point(upperBound, function.computeFunc(upperBound), mainColor).drawPoint();
-            //Draw lines under points
-            //TODO rewrite using the drawlineSegment method
-            double baseLineWidth = gc.getLineWidth();
-            gc.setLineWidth(baseLineWidth + 1);
-            gc.beginPath();
-            gc.lineTo(Graph.getPixelSpace(lowerBound, 0)[0], Graph.getPixelSpace(0, 0)[1]);
-            gc.lineTo(Graph.getPixelSpace(lowerBound, 0)[0], Graph.getPixelSpace(0,
-                    function.computeFunc(lowerBound))[1] - Point.getOuterSize() / 2);
-            gc.setStroke(mainColor);
-            gc.stroke();
-            gc.beginPath();
-            gc.lineTo(Graph.getPixelSpace(upperBound, 0)[0], Graph.getPixelSpace(0, 0)[1]);
-            gc.lineTo(Graph.getPixelSpace(upperBound, 0)[0], Graph.getPixelSpace(0, function.computeFunc(upperBound))[1]);
-            gc.setStroke(mainColor);
-            gc.stroke();
-            gc.setLineWidth(baseLineWidth);
+            Main.drawLineSegment(lowerBound, 0, lowerBound, function.computeFunc(lowerBound), mainColor, 0);
+            Main.drawLineSegment(upperBound, 0, upperBound, function.computeFunc(upperBound), mainColor, 0);
+
+            
             areaUnderCurve = Main.round(area);
             gc.setFill(Color.BLACK);
             gc.setFont(Font.font(15));
@@ -116,6 +105,7 @@ public class RiemannSum extends Visualizer{
     }
 
     public void setLowerBound(double lowerBound) {
+        System.out.println("Lower bound set");
         this.lowerBound = lowerBound;
     }
 
