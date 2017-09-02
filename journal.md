@@ -348,3 +348,22 @@ Researched the definitions of critical and inflexction points. Determined that i
 Read about L'hopitales rule.  
 Read abot epsilon delta limits
 
+## September 1st, 2017
+
+### Work Times
+In: 10:39PM
+Out: 12:34AM (Next Day)
+### Total Time Worked
+1:55
+### Work Done
+Improved performance dramatically by doing the following:  
+Performing the shunting yard algorithim once per function rather than on every evaluation  
+Marking some functions as linear and sampling  them at a far lower rate.  
+Switching from getSimpleClass to using instanceOf  
+Information on performance was gathered through the YourKit profiler.
+
+
+### Learning Done
+
+Learned how to do basic profiling in YourKit
+Practiced optimazation
