@@ -16,7 +16,9 @@ public class Function {
 
     private final double deltaX = 0.001;
     private List<Token> expression;
+    private List<Token> reversePolishExpression;
     private boolean safeRender = false;
+    private boolean isLinear = false;
 
     /**
      * This method creates a function from a string representing an expression by parsing that expression into
@@ -25,6 +27,7 @@ public class Function {
      */
     public Function(String infixString) {
         expression = tokenify(infixString);
+        reversePolishExpression = Token.shuntingYard(expression);
     }
     /**
      * This method creates a function from a list of tokens representing an expression
@@ -32,6 +35,8 @@ public class Function {
      */
     public Function(List<Token> infixList) {
         expression = infixList;
+        reversePolishExpression = Token.shuntingYard(expression);
+
     }
 
     /**
@@ -238,18 +243,18 @@ public class Function {
         //creates a new list of tokens from the one the function object contains by substituting variable tokens with
         //constant tokens of value x
         List<Token> substitutedExpression = new ArrayList<>();
-        for (Token t : this.expression) {
-            if(t.getClass().getSimpleName().equals("Variable")) {
-                if (t.getIsNegated())
+        for (Token t : this.reversePolishExpression) {
+            if(t instanceof Variable) {
+                if (t.getIsNegated()){
                     substitutedExpression.add(new Constant(-1 * x));
-                substitutedExpression.add(new Constant(x));
+                }
+                else {
+                    substitutedExpression.add(new Constant(x));
+                }
             }
             else
                 substitutedExpression.add(t);
         }
-        //replace substitutedExpression written in infix notation with the same expression written in reverse polish
-        //notation
-        substitutedExpression = Token.shuntingYard(substitutedExpression);
         //ensures no point will be rendered if division by zero or other arithmetic error
         //setting value to double max value ensures it won't appear on the screen
         double value = Double.MAX_VALUE;
@@ -299,5 +304,13 @@ public class Function {
 
     public boolean isSafeRender() {
         return safeRender;
+    }
+
+    public boolean isLinear() {
+        return isLinear;
+    }
+
+    public void setLinear(boolean linear) {
+        isLinear = linear;
     }
 }

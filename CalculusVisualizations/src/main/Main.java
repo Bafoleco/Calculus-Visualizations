@@ -34,6 +34,8 @@ import javafx.scene.Scene;
 import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Main extends Application {
     private static Stage stage;
@@ -186,7 +188,6 @@ public class Main extends Application {
         stage.setMinWidth(1200);
         stage.show();
         attachChangeListeners();
-        updateRender();
         updateUISize();
     }
 
@@ -702,9 +703,13 @@ public class Main extends Application {
             if (renderColor.equals(Color.INDIANRED)) {
                 delta *= 10;
             }
+            if(functionToRender.isLinear()) {
+                delta *= 10000;
+            }
             for (double d = MIN_X; d < MAX_X; d += delta) {
-                double yValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[1];
-                double xValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[0];
+                double coordSpaceY = functionToRender.computeFunc(d);
+                double yValue = Graph.getPixelSpace(d, coordSpaceY)[1];
+                double xValue = Graph.getPixelSpace(d, coordSpaceY)[0];
                 isNaN = new Double(yValue).isNaN();
                 if (isNaN)
                     yValue = 0;
@@ -734,8 +739,9 @@ public class Main extends Application {
                 delta *= 10;
             }
             for (double d = MIN_X; d < MAX_X; d += delta) {
-                double yValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[1];
-                double xValue = Graph.getPixelSpace(d, functionToRender.computeFunc(d))[0];
+                double coordSpaceY = functionToRender.computeFunc(d);
+                double yValue = Graph.getPixelSpace(d, coordSpaceY)[1];
+                double xValue = Graph.getPixelSpace(d, coordSpaceY)[0];
                 gc.lineTo(xValue, yValue);
             }
             gc.setStroke(renderColor);
@@ -758,7 +764,8 @@ public class Main extends Application {
      * clears the canvas and then re-renders the necessary features and resets variables.
      */
     private static void updateRender() {
-        gc.clearRect(0, 0, 10000, 10000);
+        long start = System.nanoTime();
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         riemannSumDrawer.draw();
         renderAxis();
         renderFunction(mainFunction, Color.BLUE, mainFunction.isSafeRender());
@@ -768,7 +775,8 @@ public class Main extends Application {
         criticalPointDrawer.draw();
         updateSliders();
         criticalPointDrawer.cullLists();
-
+        long end = System.nanoTime();
+        System.out.println("Render time = " + (end - start) / 1000000 );
     }
 
     /**
@@ -824,17 +832,19 @@ public class Main extends Application {
      */
     public static void drawLine(double xOne, double yOne, double xTwo, double yTwo, Color color) {
         double slope = (yTwo - yOne) / (xTwo - xOne);
-        List<Token> linearEquation = new ArrayList<>();
-        linearEquation.add(new Constant(yOne));
-        linearEquation.add(new Plus());
-        linearEquation.add(new Constant(slope));
-        linearEquation.add(new Times());
-        linearEquation.add(new LeftParens());
-        linearEquation.add(new Variable());
-        linearEquation.add(new Minus());
-        linearEquation.add(new Constant(xOne));
-        linearEquation.add(new RightParens());
-        renderFunction(new Function(linearEquation), color, false);
+        List<Token> linearEquationTokens = new ArrayList<>();
+        linearEquationTokens.add(new Constant(yOne));
+        linearEquationTokens.add(new Plus());
+        linearEquationTokens.add(new Constant(slope));
+        linearEquationTokens.add(new Times());
+        linearEquationTokens.add(new LeftParens());
+        linearEquationTokens.add(new Variable());
+        linearEquationTokens.add(new Minus());
+        linearEquationTokens.add(new Constant(xOne));
+        linearEquationTokens.add(new RightParens());
+        Function linearEquation = new Function(linearEquationTokens);
+        linearEquation.setLinear(true);
+        renderFunction(linearEquation, color, false);
     }
 
     /**

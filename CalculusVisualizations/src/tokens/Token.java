@@ -22,21 +22,21 @@ public abstract class Token {
         while(infixTokens.size() > 0) {
            Token workingToken =  infixTokens.get(0);
            //if constant add to output
-           if(workingToken.getClass().getSimpleName().equals("Constant") || workingToken.getClass().getSimpleName().equals("Variable") ) {
+           if(workingToken instanceof Constant || workingToken instanceof Variable ) {
                outputStack.add(workingToken);
            }
            //if function add to operator stack
-           else if(workingToken.getClass().getSuperclass().getSimpleName().equals("BigOperation")) {
+           else if(workingToken instanceof BigOperation) {
                operatorStack.add(workingToken);
            }
            //if seperator eg ","
-           else if(workingToken.getClass().getSimpleName().equals("Seperator")){
-               while (!operatorStack.get(operatorStack.size()-1).getClass().getSimpleName().equals("LeftParens")) {
+           else if(workingToken instanceof Seperator){
+               while (!(operatorStack.get(operatorStack.size()-1) instanceof LeftParens)) {
                    outputStack.add(operatorStack.remove(operatorStack.size() - 1));
                }
             }
            //if operator
-           else if(workingToken.getClass().getSuperclass().getSimpleName().equals("Operator")) {
+           else if(workingToken instanceof Operator) {
                Token topToken;
                if(operatorStack.size() > 0) {
                     topToken = operatorStack.get(operatorStack.size()-1);
@@ -45,7 +45,7 @@ public abstract class Token {
                     topToken = null;
                }
 
-               while(topToken != null && topToken.getClass().getSuperclass().getSimpleName().equals("Operator") &&
+               while(topToken != null && topToken instanceof Operator &&
                        (   ((Operator) workingToken).getPrecedence() < ((Operator) topToken).getPrecedence() ||
                        ( !((Operator) workingToken).isRightAssociative() && ((Operator) workingToken).getPrecedence()
                                == ((Operator) topToken).getPrecedence())))
@@ -61,11 +61,11 @@ public abstract class Token {
 
            }
            //if token is left parentheses add it to the operator stack
-            else if(workingToken.getClass().getSimpleName().equals("LeftParens")) {
+            else if(workingToken instanceof LeftParens) {
                operatorStack.add(workingToken);
             }
             //if token is right parentheses
-            else if(workingToken.getClass().getSimpleName().equals("RightParens")) {
+           else if(workingToken.getClass().getSimpleName().equals("RightParens")) {
                while (!operatorStack.get(operatorStack.size()-1).getClass().getSimpleName().equals("LeftParens")) {
                    outputStack.add(operatorStack.remove(operatorStack.size() - 1));
                }
@@ -75,7 +75,7 @@ public abstract class Token {
                    outputStack.add(operatorStack.remove(operatorStack.size() - 1));
                }
            }
-           infixTokens.remove(0);
+            infixTokens.remove(0);
         }
         //currently assuming no msitakes,
         //will add custom errors later
@@ -95,15 +95,15 @@ public abstract class Token {
         try {
             List<Double> stack = new ArrayList<>();
             for(Token t: rpnTokens) {
-                if(t.getClass().getSimpleName().equals("Constant")) {
+                if(t instanceof Constant) {
                     stack.add(((Constant) t).getValue());
                 }
-                else if(t.getClass().getSuperclass().getSimpleName().equals("Operator")) {
+                else if(t instanceof Operator) {
                     double a = stack.remove(stack.size() -  1);
                     double b = stack.remove(stack.size() -  1);
                     stack.add(((Operator)t).stackAction(a, b));
                 }
-                else if(t.getClass().getSuperclass().getSimpleName().equals("BigOperation")) {
+                else if(t instanceof BigOperation) {
                     //grab required values from top of stack
                     int inputNum = ((BigOperation)t).getArgsTaken();
                     List<Double> inputList = new ArrayList<>();

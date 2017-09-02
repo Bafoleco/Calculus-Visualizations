@@ -32,7 +32,6 @@ public class RiemannSum extends Visualizer{
             GraphicsContext gc = Main.getGc();
             double area = 0;
             double length = Math.abs(lowerBound - upperBound);
-            System.out.println("lower bound = " + lowerBound);
             double stepSize = length / numSteps;
             for(double d = lowerBound; d < upperBound - 0.01; d += stepSize ) {
                 double height = getValue(d, stepSize);
