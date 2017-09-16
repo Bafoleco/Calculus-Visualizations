@@ -1,7 +1,5 @@
 package main;
 
-import com.sun.xml.internal.ws.api.model.wsdl.WSDLBoundOperation;
-import javafx.scene.layout.Background;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.*;
 import tokens.*;
@@ -30,12 +28,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
-
-import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class Main extends Application {
     private static Stage stage;
@@ -55,7 +49,7 @@ public class Main extends Application {
     private static ScrollPane consolePane;
     private Rectangle rightEdge;
     private Rectangle bottomEdge;
-    private Color[] tabColors = {Color.INDIANRED, Color.MEDIUMSEAGREEN, Color.BLUEVIOLET, Color.GREY};
+    private Color[] tabColors = {Color.MEDIUMSEAGREEN, Color.CADETBLUE, Color.INDIANRED, Color.valueOf("#999999")};
     //Window size tracking, b prefix indicates that it is the base value
     private static double MIN_X = 0;
     private static double MAX_X = 0;
@@ -92,7 +86,7 @@ public class Main extends Application {
     private static int roundLevel = 3;
 
     //create visualizers
-    private static SecantLine secantDrawer = new SecantLine(0, 2, mainFunction);
+    private static SecantLine secantDrawer = new SecantLine(0, Math.PI / 2, mainFunction);
     private static DerivativeGraph derivativeGraphDrawer = new DerivativeGraph(1, mainFunction);
     private static TaylorSeries taylorSeriesDrawer = new TaylorSeries(1, 0, mainFunction);
     private static RiemannSum riemannSumDrawer = new RiemannSum(-1.571, 1.571, mainFunction);
@@ -113,7 +107,7 @@ public class Main extends Application {
             public void handle(KeyEvent event) {
                 if (event.getCode().toString().equals("ENTER")) {
                     Function newFunction = new Function(inputField.getText());
-                    if (newFunction.getExpression().size() > 0) {
+                    if (newFunction.getReversePolishExpression().size() > 0) {
                         resetMainFunction(newFunction);
                     } else {
                         writeConsole("ERROR: main.Function.tokenify() was not able to parse entered expression. This "
@@ -137,13 +131,13 @@ public class Main extends Application {
         });
 
         toolTab.setSide(Side.TOP);
-        //create ts tab
-        toolTab.getTabs().add(createTsTab());
         //create drv tab
         toolTab.getTabs().add(createDrvTab());
         //create integral tab
         toolTab.getTabs().add(createIntegralTab());
 
+        //create ts tab
+        toolTab.getTabs().add(createTsTab());
         toolTab.getTabs().add(createSettingsTab());
 
         //create console
@@ -189,6 +183,7 @@ public class Main extends Application {
         stage.show();
         attachChangeListeners();
         updateUISize();
+        updateUIColor(Color.MEDIUMSEAGREEN);
     }
 
     /**
@@ -239,6 +234,10 @@ public class Main extends Application {
         tsOrderPane.add(tsOrderExp, 1, 0);
         tsGridPane.add(tsOrderPane, 0, 2);
 
+        Label approxLocSliderLabel = new Label("Set approximation location");
+        tsGridPane.add(approxLocSliderLabel, 0, 3);
+
+
         tsApproxLoc = new Slider(bMIN_X, bMAX_X, (bMAX_X + bMIN_X) / 2);
         tsApproxLoc.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
@@ -251,7 +250,7 @@ public class Main extends Application {
                 updateRender();
             }
         });
-        tsGridPane.add(tsApproxLoc, 0, 3);
+        tsGridPane.add(tsApproxLoc, 0, 4);
 
         CheckBox enableErrorVis = new CheckBox("Enable error information");
         enableErrorVis.setOnAction(new EventHandler<ActionEvent>() {
@@ -261,7 +260,7 @@ public class Main extends Application {
                 updateRender();
             }
         });
-        tsGridPane.add(enableErrorVis, 0, 4);
+        tsGridPane.add(enableErrorVis, 0, 5);
 
         tsErrorLoc = new Slider(bMIN_X, bMAX_X, (bMAX_X + bMIN_X) / 2);
         tsErrorLoc.valueProperty().addListener(new ChangeListener<Number>() {
@@ -271,7 +270,7 @@ public class Main extends Application {
                 updateRender();
             }
         });
-        tsGridPane.add(tsErrorLoc, 0, 5);
+        tsGridPane.add(tsErrorLoc, 0, 6);
 
         tsGridPane.setStyle(" -fx-background-color: indianred;");
         tsGridPane.setPadding(new Insets(20, 10, 10, 10));
@@ -331,6 +330,9 @@ public class Main extends Application {
             }
         });
 
+        Label secantLocationLabel = new Label("Set secant start location");
+        drvGridPane.add(secantLocationLabel, 0, 3);
+
         drvApproxLoc = new Slider(bMIN_X, bMAX_X, (bMAX_X + bMIN_X) / 2);
         drvApproxLoc.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
@@ -342,7 +344,7 @@ public class Main extends Application {
 
         drvGridPane.add(secantCheckBox, 0, 2);
         drvGridPane.add(drvApproxLoc, 0, 4);
-        drvGridPane.add(new Label("Value of h"), 0, 5);
+        drvGridPane.add(new Label("Delta-X"), 0, 5);
 
         Slider hValueSlider = new Slider(0.01, 2, 1);
         hValueSlider.valueProperty().addListener(new ChangeListener<Number>() {
@@ -393,7 +395,6 @@ public class Main extends Application {
             @Override
             public void handle(ActionEvent event) {
                 riemannSumDrawer.setShowing(riemannCheckBox.isSelected());
-                writeConsole("You have entered the Riemann sum visualization", false);
                 updateRender();
             }
         });
@@ -419,8 +420,8 @@ public class Main extends Application {
                 updateRender();
             }
         });
-        integralGridPane.add(lowerBound, 0, 1);
-        integralGridPane.add(upperBound, 0, 2);
+        integralGridPane.add(lowerBound, 0, 2);
+        integralGridPane.add(upperBound, 0, 3);
 
         Slider numSteps = new Slider(1, 64, 1);
         numSteps.setShowTickLabels(true);
@@ -432,7 +433,7 @@ public class Main extends Application {
                 updateRender();
             }
         });
-        integralGridPane.add(numSteps, 0, 3);
+        integralGridPane.add(numSteps, 0, 4);
         //create UI to allow for choice of summation mode
         GridPane riemannOrderPane = new GridPane();
         ComboBox<String> orderChooser = new ComboBox(FXCollections.observableArrayList("1: Left Side",
@@ -448,10 +449,11 @@ public class Main extends Application {
         riemannOrderPane.add(orderChooser, 0, 0);
         Label riemmanTypeExp = new Label("   Set Riemann type");
         riemannOrderPane.add(riemmanTypeExp, 1, 0);
-        integralGridPane.add(riemannOrderPane, 0, 4);
+        integralGridPane.add(riemannOrderPane, 0, 5);
 
         integralGridPane.add(riemannCheckBox, 0, 0);
-        integralGridPane.setStyle(" -fx-background-color: blueviolet;");
+        integralGridPane.add(new Label("Set left and right bounds"), 0 , 1);
+        integralGridPane.setStyle(" -fx-background-color: cadetblue;");
         integralGridPane.setPadding(new Insets(20, 10, 10, 10));
         integralTab.setContent(integralGridPane);
         integralTab.setClosable(false);
@@ -526,7 +528,7 @@ public class Main extends Application {
 
         Label setIntColor = new Label("Riemann Sum Visualiser");
         ColorPicker intColorPicker = new ColorPicker();
-        intColorPicker.setValue(Color.BLUEVIOLET);
+        intColorPicker.setValue(Color.CADETBLUE);
         intColorPicker.valueProperty().addListener(new ChangeListener<Color>() {
             @Override
             public void changed(ObservableValue<? extends Color> observable, Color oldValue, Color newValue) {
@@ -543,7 +545,7 @@ public class Main extends Application {
 
         Label setSetColor = new Label("Settings Menu");
         ColorPicker setColorPicker = new ColorPicker();
-        setColorPicker.setValue(Color.GREY);
+        setColorPicker.setValue(Color.valueOf("#999999"));
         setColorPicker.valueProperty().addListener(new ChangeListener<Color>() {
             @Override
             public void changed(ObservableValue<? extends Color> observable, Color oldValue, Color newValue) {
@@ -587,7 +589,7 @@ public class Main extends Application {
         settingsGridPane.add(resetWindowButton, 0, 6);
         settingsGridPane.add(originToCenter, 0, 7);
         settingsGridPane.setPadding(new Insets(20, 10, 10, 10));
-        settingsGridPane.setStyle("-fx-background-color: grey;");
+        settingsGridPane.setStyle("-fx-background-color: #999999;");
         settingsTab.setContent(settingsGridPane);
         settingsTab.setClosable(false);
         return settingsTab;
@@ -701,7 +703,7 @@ public class Main extends Application {
             boolean willBeNaN = false;
             double delta = 1 / (double) XRES * zoomTransform;
             if (renderColor.equals(Color.INDIANRED)) {
-                delta *= 10;
+                delta *= 5000;
             }
             if(functionToRender.isLinear()) {
                 delta *= 10000;
@@ -829,8 +831,9 @@ public class Main extends Application {
      * @param xTwo x coordinate of point two
      * @param yTwo y coordinate of point two
      * @param color the color of the line
+     * @return the slope of the line created
      */
-    public static void drawLine(double xOne, double yOne, double xTwo, double yTwo, Color color) {
+    public static double drawLine(double xOne, double yOne, double xTwo, double yTwo, Color color) {
         double slope = (yTwo - yOne) / (xTwo - xOne);
         List<Token> linearEquationTokens = new ArrayList<>();
         linearEquationTokens.add(new Constant(yOne));
@@ -845,6 +848,7 @@ public class Main extends Application {
         Function linearEquation = new Function(linearEquationTokens);
         linearEquation.setLinear(true);
         renderFunction(linearEquation, color, false);
+        return slope;
     }
 
     /**
@@ -1039,6 +1043,10 @@ public class Main extends Application {
 
     public static CriticalPoint getCriticalPointDrawer() {
         return criticalPointDrawer;
+    }
+
+    public static Function getMainFunction() {
+        return mainFunction;
     }
 
     public static void main(String[] args) {

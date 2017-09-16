@@ -29,6 +29,7 @@ public class Function {
         expression = tokenify(infixString);
         reversePolishExpression = Token.shuntingYard(expression);
     }
+
     /**
      * This method creates a function from a list of tokens representing an expression
      * @param infixList a list of tokens representing a mathematical expression in infix notation
@@ -300,6 +301,10 @@ public class Function {
 
     public List<Token> getExpression() {
         return expression;
+    }
+
+    public List<Token> getReversePolishExpression() {
+        return reversePolishExpression;
     }
 
     public boolean isSafeRender() {

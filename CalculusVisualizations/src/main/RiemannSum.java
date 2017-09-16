@@ -9,7 +9,7 @@ public class RiemannSum extends Visualizer{
     private double upperBound;
     private int numSteps = 1;
     private String areaUnderCurve;
-    private Color mainColor = Color.BLUEVIOLET;
+    private Color mainColor = Color.CADETBLUE;
 
     /**
      * Mode 1 = left
@@ -42,7 +42,7 @@ public class RiemannSum extends Visualizer{
                 double leftCornerY;
                 if(height < 0) {
                     leftCornerY = Graph.getPixelSpace(d, 0)[1];
-                    gc.setFill(Color.RED);
+                    gc.setFill(Color.DARKRED.brighter());
                 }
                 else {
                     leftCornerY = Graph.getPixelSpace(d, getValue(d, stepSize))[1];
@@ -52,10 +52,10 @@ public class RiemannSum extends Visualizer{
 
                 gc.fillRect(leftCornerX, leftCornerY, width, Math.abs(pixHeight));
             }
-            new Point(lowerBound, function.computeFunc(lowerBound), mainColor).drawPoint();
-            new Point(upperBound, function.computeFunc(upperBound), mainColor).drawPoint();
-            Main.drawLineSegment(lowerBound, 0, lowerBound, function.computeFunc(lowerBound), mainColor, 0);
-            Main.drawLineSegment(upperBound, 0, upperBound, function.computeFunc(upperBound), mainColor, 0);
+            new Point(lowerBound, function.computeFunc(lowerBound), Color.BLACK).drawPoint();
+            new Point(upperBound, function.computeFunc(upperBound), Color.BLACK).drawPoint();
+            Main.drawLineSegment(lowerBound, 0, lowerBound, function.computeFunc(lowerBound), Color.BLACK, 0);
+            Main.drawLineSegment(upperBound, 0, upperBound, function.computeFunc(upperBound), Color.BLACK, 0);
 
             
             areaUnderCurve = Main.round(area);
